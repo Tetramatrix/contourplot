@@ -163,12 +163,11 @@ class Image
       $red = imagecolorallocate ($im,0xff,0x00,0x00);
       $purple = imagecolorallocate ($im,0x80,0x00,0x80);
       
+      $points=array();
       // Fill in the background of the image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
       foreach ($this->delaunay as $key => $arr)
       {
-	 $num=0;
-	 $points=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
 	    list($x1,$y1,$x2,$y2) = $iarr;
@@ -195,21 +194,30 @@ class Image
 	       if ($ok==0)
 	       {
 		  //imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$gray_dark);
-		  $points[]=$x1+$this->padding;
-		  $points[]=$y1+$this->padding;
-		  $points[]=$x2+$this->padding;
-		  $points[]=$y2+$this->padding;
-		  $num+=2;
+		  $points[$key][]=$x1+$this->padding;
+		  $points[$key][]=$y1+$this->padding;
+		  $points[$key][]=$x2+$this->padding;
+		  $points[$key][]=$y2+$this->padding;
 		  //imagefilledellipse($im,$x1+$this->padding, $y1+$this->padding, 4, 4, $blue);
 	       }
 	    }
+	 }	 
+      }
+      
+      foreach ($points as $key=>$arr) {
+	 $num=count($arr)/2;
+	 if ($num >=3) {
+	    imagefilledpolygon($im,$arr,$num,$gray_lite);
 	 }
-	 //imagefilledpolygon($im,$points,$num,$gray_lite);
-	 for ($i=0;$i<$num;$i+=4) {
-	    imagefilledellipse($im,$points[$i], $points[$i+1], 4, 4, $blue);
-	    imageline($im,$points[$i],$points[$i+1],$points[$i+2],$points[$i+3],$gray_dark);
+      }
+       
+      foreach ($points as $key=>$arr) {
+	 if (count($arr)/2 >=3) {
+	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
+	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $blue);
+	       imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
+	    }
 	 }
-	 
       }
       
       foreach ($this->hull as $key => $arr)
