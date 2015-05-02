@@ -67,6 +67,7 @@ class Image
    var $hull;
    var $nvertx;
    var $nverty;
+   var $pointset;
    
    function __construct($path,$pObj)
    {
@@ -80,6 +81,7 @@ class Image
       $this->hull=$pObj->hull;
       $this->nvertx=$pObj->nvertx;
       $this->nverty=$pObj->nverty;
+      $this->pointset=$pObj->pointset;
    }
    
    function erropen()
@@ -172,12 +174,13 @@ class Image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
       foreach ($this->delaunay as $key => $arr)
       {
+	 $edge=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
 	    list($x1,$y1,$x2,$y2) = $iarr;
 	    $dx = $x2-$x1;
 	    $dy = $y2-$y1;
-	    $d = $dx*$dx+$dy*$dy;
+	    $edge[]=$d=$dx*$dx+$dy*$dy;
 	    if ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
 	    {
 	       $ok=0;
@@ -203,7 +206,13 @@ class Image
 		  $points[$key][]=$y2+$this->padding;
 	       }
 	    }
-	 }	 
+	 }
+	 
+	 $average=0;
+	 foreach ($edge as $iikey=>$iiarr) {
+	    $average+=sqrt($iiarr);
+	 }
+	 $average/=3;
       }
       
       foreach ($points as $key=>$arr) {
@@ -439,7 +448,7 @@ class Contourplot
       return $inside;
    }
    
-   function getEdges($n, $x, $y, $z)
+   function getEdges($n, $x, $y)
    {
       /*
          Set up the supertriangle
@@ -604,9 +613,9 @@ class Contourplot
          
       foreach ($this->pointset as $key => $arr)
       {
-        list($x[],$y[]) = $arr;
+        list($x[],$y[],$z[]) = $arr;
       }
-      $result=$this->getEdges(count($this->pointset), $x, $y, $z);
+      $result=$this->getEdges(count($this->pointset), $x, $y);
    
       $sum=$c=0;
       foreach ($this->dist as $key => $arr)

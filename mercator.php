@@ -72,8 +72,8 @@ class mercator {
    function convert($arr) {
       $set=array();
       foreach ($arr as $key => $arr) {
-         list($lon,$lat)=$arr;
-	 $set[]="$lon,$lat";
+         list($lon,$lat,$z)=$arr;
+	 $set[]="$lon,$lat,$z";
       }
       return $set;
    }
@@ -119,12 +119,12 @@ class mercator {
    {
       foreach ($arr as $key => $arr2) 
       { 
-         list($lon,$lat) = explode(",",$arr2); 
+         list($lon,$lat,$z) = explode(",",$arr2); 
          $this->mapLonLeft = min($this->mapLonLeft,$lon); 
          $this->mapLonRight = max($this->mapLonRight,$lon); 
          $this->mapLatBottom = min( $this->mapLatBottom,$lat); 
          $this->mapLatTop = max($this->mapLatTop,$lat); 
-         $this->set[]=array($lon,$lat); 
+         $this->set[]=array($lon,$lat,$z); 
       } 
 
       $mapLonDelta =  $this->mapLonRight - $this->mapLonLeft; 
@@ -144,11 +144,11 @@ class mercator {
 
       foreach ($this->set as $key => $arr2) 
       { 
-         list($lon,$lat) = $arr2; 
-         $tx = ($lon - $this->mapLonLeft) * ($newWidth/$mapLonDelta)*$mapRatioW; 
+         list($lon,$lat,$z) = $arr2; 
+         $tx = ($lon-$this->mapLonLeft)*($newWidth/$mapLonDelta)*$mapRatioW; 
          $f = sin($lat*M_PI/180); 
          $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
-         $this->proj[]=array($tx,$ty);
+         $this->proj[]=array($tx,$ty,$z);
       }
       $this->set=$this->convert($this->set);          
       return $this->proj;

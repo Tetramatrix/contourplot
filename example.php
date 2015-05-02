@@ -24,12 +24,12 @@ $res=$s->project($shape);
 $filter=$s->filter($s->proj,10);
 
 $map=new mercator(MAPWIDTH,MAPHEIGHT);
-$arr=$map->loadfile("PennsylvaniaLonLatT.txt");
+$arr=$map->loadfileZ("PennsylvaniaLonLatT.txt");
 $arr=array_merge($arr,$filter);
 $res=$map->project($arr);
 
 $plot=new Contourplot();
-$plot->main($res,$map->mapWidth,$map->mapHeight,$s->proj,17.0);
+$res=$plot->main($res,$map->mapWidth,$map->mapHeight,$s->proj,17.0);
  
 $pic=new Image("/tmp/",$plot);
 $pic->create();
