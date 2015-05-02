@@ -167,6 +167,8 @@ class Image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
       foreach ($this->delaunay as $key => $arr)
       {
+	 $num=0;
+	 $points=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
 	    list($x1,$y1,$x2,$y2) = $iarr;
@@ -185,18 +187,29 @@ class Image
 	       foreach ($this->shape as $iikey => $iiarr)
 	       {
 		  list($x,$y)=$iiarr;
-		  if (array($x,$y)==array($x1,$y1) || array($x,$y)==array($x2,$y2) )
+		  if (array($x,$y)==array($x1,$y1) || array($x,$y)==array($x2,$y2))
 		  {
 		     $ok=1;
 		  }
 	       }
 	       if ($ok==0)
 	       {
-		  imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$gray_lite);
-		  imagefilledellipse($im, $x1+$this->padding, $y1+$this->padding, 4, 4, $blue);
+		  //imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$gray_dark);
+		  $points[]=$x1+$this->padding;
+		  $points[]=$y1+$this->padding;
+		  $points[]=$x2+$this->padding;
+		  $points[]=$y2+$this->padding;
+		  $num+=2;
+		  //imagefilledellipse($im,$x1+$this->padding, $y1+$this->padding, 4, 4, $blue);
 	       }
 	    }
-	 }   
+	 }
+	 //imagefilledpolygon($im,$points,$num,$gray_lite);
+	 for ($i=0;$i<$num;$i+=4) {
+	    imagefilledellipse($im,$points[$i], $points[$i+1], 4, 4, $blue);
+	    imageline($im,$points[$i],$points[$i+1],$points[$i+2],$points[$i+3],$gray_dark);
+	 }
+	 
       }
       
       foreach ($this->hull as $key => $arr)
@@ -243,7 +256,7 @@ class Image
       {
          foreach ($arr as $ikey => $iarr)
          {
-            if ( !fwrite ( $handle, $iarr[0].",".$iarr[1]."\n" ) )
+            if (!fwrite(handle, $iarr[0].",".$iarr[1]."\n"))
             {
                $this->errwrite();  
             }
