@@ -2,71 +2,10 @@
 /* * *************************************************************
  * Copyright notice
  *
- * (c) 2014 Chi Hoang (info@phpdevpad.de)
+ * (c) 2014-2015 Chi Hoang (info@phpdevpad.de)
  *  All rights reserved
  *
  * **************************************************************/
- 
-//class visualize
-//{
-//   var $path;
-//   var $pObj;
-//   
-//   function visualize($path,$pObj)
-//   {
-//      $this->path=$path;
-//      $this->pObj=$pObj;
-//   }
-//   
-//   function erropen()
-//   {
-//      print "Cannot open file";
-//      exit;
-//   }
-//   
-//   function errwrite()
-//   {
-//      print "Cannot write file";
-//      exit;
-//   }
-//   
-//   function genimage()
-//   {
-//         // Generate the image variables
-//      $im = imagecreate($this->pObj->mapWidth,$this->pObj->mapHeight);
-//      $white = imagecolorallocate ($im,0xff,0xff,0xff);
-//      $black = imagecolorallocate($im,0x00,0x00,0x00);
-//      $gray_lite = imagecolorallocate ($im,0xee,0xee,0xee);
-//      $gray_dark = imagecolorallocate ($im,0x7f,0x7f,0x7f);
-//      $firebrick = imagecolorallocate ($im,0xb2,0x22,0x22);
-//      $blue = imagecolorallocate ($im,0x00,0x00,0xff);
-//      $darkorange = imagecolorallocate ($im,0xff,0x8c,0x00);
-//      $red = imagecolorallocate ($im,0xff,0x00,0x00);
-//      
-//      // Fill in the background of the image
-//      imagefilledrectangle($im, 0, 0, $this->pObj->mapWidth, $this->pObj->mapHeight, $white);
-//      foreach ($this->pObj->proj as $key => $arr)
-//      {
-//          list($x,$y)=$arr;
-//          imagefilledellipse($im, $x, $y, 2, 2, $red);
-//      }
-//      
-//      ob_start();
-//      imagepng($im);
-//      $imagevariable = ob_get_contents();
-//      ob_end_clean();
-//
-//         // write to file
-//      $filename = $this->path."proj_". rand(0,1000).".png";
-//      $fp = fopen($filename, "w");
-//      fwrite($fp, $imagevariable);
-//      if(!$fp)
-//      {
-//         $this->errwrite();   
-//      }
-//      fclose($fp);
-//   }
-//}
 
 class mercator {
 
@@ -118,6 +57,18 @@ class mercator {
       return $arr;
    }
    
+   function loadfileZ($filename) {
+      $arr=array();
+      $file = fopen($filename, "r");
+      while (!feof($file))
+      {
+          list($lon,$lat,$z)=explode(",",rtrim(fgets($file)));
+          $arr[]="$lon,$lat,$z"; 
+      }
+      fclose($file);
+      return $arr;
+   }
+   
    function convert($arr) {
       $set=array();
       foreach ($arr as $key => $arr) {
@@ -131,9 +82,9 @@ class mercator {
       $x=$y=array();
       foreach ($arr as $key => $arr)
       {
-	  list($tx,$ty) = $arr;
-	  $x[]=$tx;
-	  $y[]=$ty;
+         list($tx,$ty) = $arr;
+         $x[]=$tx;
+         $y[]=$ty;
       }
       $x=array_values($x);
       $y=array_values($y);
@@ -158,8 +109,8 @@ class mercator {
       }
       $filter=array();
       foreach ($set as $key => $arr) {
-	  list($lon,$lat)=explode(",",$this->set[$key]);
-	  $filter[]="$lon,$lat";
+         list($lon,$lat)=explode(",",$this->set[$key]);
+         $filter[]="$lon,$lat";
       }
       return $filter;
    }
@@ -193,15 +144,13 @@ class mercator {
 
       foreach ($this->set as $key => $arr2) 
       { 
-          list($lon,$lat) = $arr2; 
-          $tx = ($lon - $this->mapLonLeft) * ($newWidth/$mapLonDelta)*$mapRatioW; 
-          $f = sin($lat*M_PI/180); 
-          $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
-          $this->proj[]=array($tx,$ty);
+         list($lon,$lat) = $arr2; 
+         $tx = ($lon - $this->mapLonLeft) * ($newWidth/$mapLonDelta)*$mapRatioW; 
+         $f = sin($lat*M_PI/180); 
+         $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
+         $this->proj[]=array($tx,$ty);
       }
-      
-      $this->set=$this->convert($this->set);    
-      
+      $this->set=$this->convert($this->set);          
       return $this->proj;
    }
 }

@@ -2,7 +2,7 @@
 /***************************************************************
 * Copyright notice
 *
-* (c) 2010-2013 Chi Hoang (info@chihoang.de)
+* (c) 2013-2015 Chi Hoang (info@chihoang.de)
 *  All rights reserved
 *
 ***************************************************************/
@@ -29,7 +29,7 @@ $arr=array_merge($arr,$filter);
 $res=$map->project($arr);
 
 $plot=new Contourplot();
-$plot->main($res,$map->mapWidth,$map->mapHeight,$s->proj,8.9);
+$plot->main($res,$map->mapWidth,$map->mapHeight,$s->proj,17.0);
  
 $pic=new Image("/tmp/",$plot);
 $pic->create();

@@ -65,6 +65,8 @@ class Image
    var $average;
    var $shape;
    var $hull;
+   var $nvertx;
+   var $nverty;
    
    function __construct($path,$pObj)
    {
@@ -76,6 +78,8 @@ class Image
       $this->average=$pObj->average;
       $this->shape=$pObj->shape;
       $this->hull=$pObj->hull;
+      $this->nvertx=$pObj->nvertx;
+      $this->nverty=$pObj->nverty;
    }
    
    function erropen()
@@ -177,10 +181,10 @@ class Image
 	    if ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
 	    {
 	       $ok=0;
-	//       if (!$this->pObj->pnpoly(count($this->pObj->nvertx),$this->pObj->nvertx,$this->pObj->nverty,$x1,$y1)) {
+	//       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
 	//	  $ok=1;
 	//       }
-	//       if (!$this->pObj->pnpoly(count($this->pObj->nvertx),$this->pObj->nvertx,$this->pObj->nverty,$x2,$y2)) {
+	//       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
 	//	  $ok=1;
 	//       }
 	       foreach ($this->shape as $iikey => $iiarr)
@@ -193,12 +197,10 @@ class Image
 	       }
 	       if ($ok==0)
 	       {
-		  //imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$gray_dark);
 		  $points[$key][]=$x1+$this->padding;
 		  $points[$key][]=$y1+$this->padding;
 		  $points[$key][]=$x2+$this->padding;
 		  $points[$key][]=$y2+$this->padding;
-		  //imagefilledellipse($im,$x1+$this->padding, $y1+$this->padding, 4, 4, $blue);
 	       }
 	    }
 	 }	 
