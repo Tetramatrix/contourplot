@@ -101,7 +101,7 @@ class Image
       $i=$j=$c=0;
       for ($i=0, $j=$nvert-1; $i<$nvert; $j=$i++)
       {
-	if ( (($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
+	if ((($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
 	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]) )
 	 {
 	    $c=1;
@@ -177,19 +177,13 @@ class Image
 	 $edge=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
-	    list($x1,$y1,$x2,$y2) = $iarr;
+	    list($x1,$y1,$x2,$y2)=$iarr;
 	    $dx = $x2-$x1;
 	    $dy = $y2-$y1;
 	    $edge[]=$d=$dx*$dx+$dy*$dy;
 	    if ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
 	    {
 	       $ok=0;
-	//       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
-	//	  $ok=1;
-	//       }
-	//       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
-	//	  $ok=1;
-	//       }
 	       foreach ($this->shape as $iikey => $iiarr)
 	       {
 		  list($x,$y)=$iiarr;
@@ -217,7 +211,20 @@ class Image
       
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
-	 if ($num >=3) {
+	 if ($num >=3 && $this->hull[$key]) {
+	    for($i=0;$i<$num;$i+=2) {
+	       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$arr[$i],$arr[$i+1])) {
+		  $ok=1;
+		  $hull[$key][]=$arr[$i];
+		  $hull[$key][]=$arr[$i+1];
+		  unset($arr[$i]);
+		  unset($arr[$i+1]);
+		  --$num;
+	       }
+	    }
+	 }
+	 if ($num>=3 && !$this->hull[$key]) {
+	    $arr=array_values($arr);
 	    imagefilledpolygon($im,$arr,$num,$gray_lite);
 	 }
       }
@@ -230,6 +237,7 @@ class Image
 	    }
 	 }
       }
+      
       
       foreach ($this->hull as $key => $arr)
       {
@@ -584,9 +592,9 @@ class Contourplot
       {
          $sortX[$key] = $arr[0];
       } 
-      array_multisort($sortX, SORT_DESC, SORT_NUMERIC, $this->shape);
+      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->shape);
       
-      $this->nvertx = $this->nverty = array(); 
+      $this->nvertx=$this->nverty=array(); 
       foreach($this->shape as $key => $arr)
       {
 	 list($this->nvertx[],$this->nverty[])=$arr;
@@ -604,14 +612,14 @@ class Contourplot
          $this->pointset=$pointset;   
       }
 
-      $x = $y = $sortX = array(); 
-      foreach($this->pointset as $key => $arr)
+      $x=$y=$sortX=array(); 
+      foreach($this->pointset as $key=>$arr)
       {
-         $sortX[$key] = $arr[0];
+         $sortX[$key]=$arr[0];
       } 
       array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->pointset);
          
-      foreach ($this->pointset as $key => $arr)
+      foreach ($this->pointset as $key=>$arr)
       {
         list($x[],$y[],$z[]) = $arr;
       }
@@ -622,8 +630,8 @@ class Contourplot
       {
 	 if (array_sum($arr)<SUPER_TRIANGLE)
 	 {
-	    $sum += array_sum($arr);
-	    $c += count($arr);   
+	    $sum+=array_sum($arr);
+	    $c+=count($arr);   
 	 }
       }
       $this->average=$sum/$c*$this->weight;
@@ -699,7 +707,22 @@ class Contourplot
                }
             }
          }
-      }      
-  }
+      }
+      
+//      $this->nertx=$this->nerty=array();
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2)=$iarr;
+//	    $this->nertx[]=$x1;
+//	    $this->nerty[]=$y1;
+//	    $this->nertx[]=$x2;
+//	    $this->nerty[]=$y2;
+//	 }
+//      }
+      
+      
+   }
 }
 ?>
