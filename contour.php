@@ -595,6 +595,21 @@ function getEdges($n, $points)
       return count($v);
    }      
    
+   function pnpoly($nvert, $vertx, $verty, $testx, $testy)
+   {
+      $i=$j=$c=0;
+      for ($i=0, $j=$nvert-1; $i<$nvert; $j=$i++)
+      {
+	if ((($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
+	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]) )
+	 {
+	    $c=1;
+	    break;
+	 }
+      }
+      return $c;
+   }
+   
    function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$weight=6.899)
    {
       $this->stageWidth = $stageWidth;
@@ -654,6 +669,7 @@ function getEdges($n, $points)
       $this->average=$sum/$c*$this->weight;
       
       $n=count($this->points);
+      $sum=$c=0;
       foreach ($this->indices as $key => $arr)
       {
          foreach ($this->indices as $ikey => $iarr)
@@ -691,10 +707,26 @@ function getEdges($n, $points)
 		     $this->hull[$key]=$this->delaunay[$key];
 		  } else
 		  {
+		//     list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->points[$arr->x]->x,$this->points[$arr->x]->y,
+		//				         $this->points[$arr->y]->x,$this->points[$arr->x]->y,
+		//				         $this->points[$arr->z]->x,$this->points[$arr->z]->y,
+		//				       );		     
+		//     $ok=0;
+		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+		//       $ok=1; 
+		//     }	       
+		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+		//       $ok=1; 
+		//     }
+		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x3,$y3)) {
+		//       $ok=1; 
+		//     }
 		     foreach ($this->dist[$key] as $iikey => $iiarr)
 		     {
 			if ($iiarr>$this->average)
-			{				
+			{
+			   $sum+=$iiarr;
+			   $c++;
 			   $this->hull[$key]=$this->delaunay[$key];
 			   break;
 			}   
@@ -705,18 +737,41 @@ function getEdges($n, $points)
          }
       }
       
-      $this->nvertx=$this->nverty=array();
-      foreach ($this->hull as $key => $arr)
-      {
-	 foreach ($arr as $ikey => $iarr)
-	 {
-	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-	    $this->nvertx[]=$x1;
-	    $this->nverty[]=$y1;
-	    $this->nvertx[]=$x2;
-	    $this->nverty[]=$y2;
-	 }
-      }
+      $this->average2=$sum/$c*$this->weight;
+      
+//      $this->nvertx=$this->nverty=array();
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+//	    $this->nvertx[]=$x1;
+//	    $this->nverty[]=$y1;
+//	    $this->nvertx[]=$x2;
+//	    $this->nverty[]=$y2;
+//	 }
+//      }
+
+//      $filter=$this->points;
+//      foreach ($filter as $key => $arr) {
+//	 if ($arr->z===null) {
+//	    unset($filter[$key]);
+//	 }
+//      }
+//      
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
+//	    foreach ($filter as $iikey => $iiarr) {
+//	       if ($x1==$iiarr->x && $y1==$iiarr->y || $x2==$iiarr->x && $y2==$iiarr->y) {
+//		  unset($this->hull[$key]);
+//		  break;
+//	       }
+//	    }
+//	 }
+//      }
       
       return $result;
    }
