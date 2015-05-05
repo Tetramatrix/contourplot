@@ -8,7 +8,7 @@
 ***************************************************************/
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
-define("ALPHA",4.0);
+define("ALPHA",3.5);
 define("OMEGA",2);
 
 require_once("mercator.php");

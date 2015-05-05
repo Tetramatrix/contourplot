@@ -11,6 +11,52 @@
 define("EPSILON",0.000001);
 define("SUPER_TRIANGLE",(float)1000000000);
 
+class Triangle {
+   var $x,$y,$z;
+   function __construct($x1,$y1,$x2,$y2,$x3,$y3,$x4,$y4,$x5,$y5,$x6,$y6) {
+      $this->x=new Point(new Edge($x1,$y1),new Edge($x2,$y2));
+      $this->y=new Point(new Edge($x3,$y3),new Edge($x4,$y4));
+      $this->z=new Point(new Edge($x5,$y5),new Edge($x6,$y6));
+   }
+}
+
+class Indices {
+   var $x,$y,$z;
+   function __construct($x=0,$y=0,$z=0) {
+      $this->x=$x;
+      $this->y=$y;
+      $this->z=$z;
+   }
+}
+
+class Edge
+{
+   var $e;
+   function __construct($x,$y) {
+      $this->e=new Point($x,$y);
+   }
+   
+   public function __get($field) {
+      if($field == 'x')
+      {
+	return $this->e->x;
+      } else if($field == 'y')
+      {
+	 return $this->e->y;
+      }
+   }
+}
+
+class Point
+{
+   var $x,$y,$z;
+   function __construct($x=0,$y=0,$z=0) {
+      $this->x=$x;
+      $this->y=$y;
+      $this->z=$z;
+   }
+}
+
   // circum circle
 class Circle
 {
@@ -57,17 +103,7 @@ class db
 
 class Image
 {
-   var $path;
-   var $stageWidth;
-   var $stageHeight;
-   var $padding;
-   var $delaunay;
-   var $average;
-   var $shape;
-   var $hull;
-   var $nvertx;
-   var $nverty;
-   var $pointset;
+   var $path, $stageWidth, $stageHeight, $padding, $delaunay, $average, $shape, $hull, $nvertx, $nverty, $points;
    
    function __construct($path,$pObj)
    {
@@ -111,49 +147,6 @@ class Image
       return $c;
    }
    
-   function create2($set,$stageWidth,$stageHeight)
-   {
-         // Generate the image variables
-      $im = imagecreate($stageWidth,$stageHeight);
-      $white = imagecolorallocate ($im,0xff,0xff,0xff);
-      $blue = imagecolorallocate ($im,0x00,0x00,0xff);
-      $white = imagecolorallocate ($im,0xff,0xff,0xff);
-      $black = imagecolorallocate($im,0x00,0x00,0x00);
-      $gray_lite = imagecolorallocate ($im,0xee,0xee,0xee);
-      $gray_dark = imagecolorallocate ($im,0x7f,0x7f,0x7f);
-      $firebrick = imagecolorallocate ($im,0xb2,0x22,0x22);
-      $blue = imagecolorallocate ($im,0x00,0x00,0xff);
-      $darkorange = imagecolorallocate ($im,0xff,0x8c,0x00);
-      $green = imagecolorallocate ($im,0x00,0xff,0x00);
-      $darkviolet = imagecolorallocate ($im,0x94,0x00,0xd3);
-      $purple = imagecolorallocate ($im,0x80,0x00,0x80);
-      $red  = imagecolorallocate ($im,0xff,0x00,0x00);
-      
-      // Fill in the background of the image
-      imagefilledrectangle($im, 0, 0, $stageWidth+200, $stageHeight+200, $white);
-
-      foreach ($set as $key => $arr)
-      {
-	 list($x1,$y1)=$arr;
-	 imagefilledellipse($im, $x1, $y1, 8, 8, $blue);
-      }
-      
-      flush();
-      ob_start();
-      imagepng($im);
-      $imagevariable = ob_get_contents();
-      ob_end_clean();
-
-         // write to file
-      $filename = $this->path."tri_". rand(0,1000).".png";
-      $fp = fopen($filename, "w");
-      fwrite($fp, $imagevariable);
-      if(!$fp)
-      {
-         $this->errwrite();   
-      }
-      fclose($fp);
-   }
 
    function create()
    {
@@ -177,11 +170,20 @@ class Image
 	 $edge=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
-	    list($x1,$y1,$x2,$y2)=$iarr;
+	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
 	    $dx = $x2-$x1;
 	    $dy = $y2-$y1;
 	    $edge[]=$d=$dx*$dx+$dy*$dy;
-	    if ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
+	    
+	    $ok=0;
+	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+	      $ok=1; 
+	    }	       
+	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+	      $ok=1; 
+	    }	       
+	    if (($ok && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
+		|| ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE))
 	    {
 	       $ok=0;
 	       foreach ($this->shape as $iikey => $iiarr)
@@ -233,17 +235,18 @@ class Image
 	 if (count($arr)/2 >=3) {
 	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
 	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $blue);
-	       imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
+	       if (!$this->hull[$key]) {
+		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
+	       }
 	    }
 	 }
       }
-      
       
       foreach ($this->hull as $key => $arr)
       {
 	 foreach ($arr as $ikey => $iarr)
 	 {
-	    list($x1,$y1,$x2,$y2) = $iarr;
+	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
 	    $dx = $x2-$x1;
 	    $dy = $y2-$y1;
 	    $d = $dx*$dx+$dy*$dy;
@@ -316,7 +319,7 @@ class Contourplot
    var $stageWidth = 400;
    var $stageHeight = 400;
    var $delaunay = array();
-   var $pointset = array();
+   var $points = array();
    var $indices = array();
    var $cc = array();
 
@@ -456,7 +459,7 @@ class Contourplot
       return $inside;
    }
    
-   function getEdges($n, $x, $y)
+function getEdges($n, $points)
    {
       /*
          Set up the supertriangle
@@ -466,16 +469,13 @@ class Contourplot
          the triangle list.
       */
       
-      $x[$n+0] = -SUPER_TRIANGLE;
-      $y[$n+0] = SUPER_TRIANGLE;
-      $x[$n+1] = 0;
-      $y[$n+1] = -SUPER_TRIANGLE;
-      $x[$n+2] = SUPER_TRIANGLE;
-      $y[$n+2] = SUPER_TRIANGLE;
+      $points[$n+0] = new Point(-SUPER_TRIANGLE,SUPER_TRIANGLE);
+      $points[$n+1] = new Point(0,-SUPER_TRIANGLE);
+      $points[$n+2] = new Point(SUPER_TRIANGLE,SUPER_TRIANGLE);
     
       // indices       
       $v = array(); 
-      $v[] = array($n,$n+1,$n+2);
+      $v[] = new Indices($n,$n+1,$n+2);
       
       //sort buffer
       $complete = array();
@@ -484,7 +484,7 @@ class Contourplot
       /*
          Include each point one at a time into the existing mesh
       */
-      foreach ($x as $key => $arr)
+      foreach ($points as $key => $arr)
       {        
          /*
             Set up the edge buffer.
@@ -497,14 +497,16 @@ class Contourplot
          foreach ($v as $vkey => $varr)
          {  
             if ($complete[$vkey]) continue;
-            list($vi,$vj,$vk)=array($v[$vkey][0],$v[$vkey][1],$v[$vkey][2]);
-            $c=$this->CircumCircle($x[$vi],$y[$vi],$x[$vj],$y[$vj],$x[$vk],$y[$vk]);
-	    if ($c->x + $c->r < $x[$key]) $complete[$vkey]=1;
-            if ($c->r > EPSILON && $this->inside($c, $x[$key],$y[$key]))
+            list($vi,$vj,$vk)=array($v[$vkey]->x,$v[$vkey]->y,$v[$vkey]->z);
+            $c=$this->CircumCircle($points[$vi]->x,$points[$vi]->y,
+				   $points[$vj]->x,$points[$vj]->y,
+				   $points[$vk]->x,$points[$vk]->y);
+	    if ($c->x + $c->r < $points[$key]->x) $complete[$vkey]=1;
+            if ($c->r > EPSILON && $this->inside($c, $points[$key]->x,$points[$key]->y))
             {
-	       $edges[]=array($vi,$vj);
-	       $edges[]=array($vj,$vk);
-	       $edges[]=array($vk,$vi);
+	       $edges[]=new Edge($vi,$vj);
+	       $edges[]=new Edge($vj,$vk);
+	       $edges[]=new Edge($vk,$vi); 
 
                unset($v[$vkey]);
                unset($complete[$vkey]);
@@ -523,16 +525,17 @@ class Contourplot
             {
                if ($ekey != $ikey)
                {
-                  if (($earr[0] == $iarr[1]) && ($earr[1] == $iarr[0]))
+                  if (($earr->x == $iarr->y) && ($earr->y == $iarr->x))
                   {
                      unset($edges[$ekey]);
                      unset($edges[$ikey]);
                      
-                  } elseif (($earr[0] == $iarr[0]) && ($earr[1] == $iarr[1]))
+                  } else if (($earr->x == $iarr->x) && ($earr->y == $iarr->y))
                   {
                      unset($edges[$ekey]);
                      unset($edges[$ikey]);
-                  }   
+                 
+		  }
                }
             }
          }
@@ -548,35 +551,51 @@ class Contourplot
          $edges=array_values($edges);
          foreach ($edges as $ekey => $earr)
          {
-	    if ($edges[$ekey][0] != $key && $edges[$ekey][1] != $key) {
-	       $v[] =array($edges[$ekey][0],$edges[$ekey][1],$key);
+	    if ($edges[$ekey]->x != $key && $edges[$ekey]->y != $key)
+	    {
+	       $v[] = new Indices($edges[$ekey]->x,$edges[$ekey]->y,$key);
 	    }
             $complete[$ntri++]=0;
          }
       }
-      
+    
       foreach ($v as $key => $arr)
       {
          $this->indices[$key]=$arr;
-         $this->indices[$key][]=$arr[0];
-         $this->delaunay[$key]=array(array($x[$arr[0]],$y[$arr[0]],$x[$arr[1]],$y[$arr[1]]),
-                                 array($x[$arr[1]],$y[$arr[1]],$x[$arr[2]],$y[$arr[2]]),
-                                 array($x[$arr[2]],$y[$arr[2]],$x[$arr[0]],$y[$arr[0]])                                 
-                                 );
-	 $dx=$x[$arr[1]]-$x[$arr[0]];
-	 $dy=$y[$arr[1]]-$y[$arr[0]];
+         $this->delaunay[$key]=new Triangle($points[$arr->x]->x,$points[$arr->x]->y,
+					  $points[$arr->y]->x,$points[$arr->y]->y,
+					  $points[$arr->y]->x,$points[$arr->y]->y,
+					  $points[$arr->z]->x,$points[$arr->z]->y,
+					  $points[$arr->z]->x,$points[$arr->z]->y,
+					  $points[$arr->x]->x,$points[$arr->x]->y                                 
+				   );
+	 
+//	 $dx=$x[$arr[1]]-$x[$arr[0]];
+//	 $dy=$y[$arr[1]]-$y[$arr[0]];
+//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
+//	 $dx=$x[$arr[2]]-$x[$arr[1]];
+//	 $dy=$y[$arr[2]]-$y[$arr[1]];
+//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
+//         $dx=$x[$arr[0]]-$x[$arr[2]];
+//	 $dy=$y[$arr[0]]-$y[$arr[2]];
+//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
+
+	 $dx=$points[$arr->y]->x-$points[$arr->x]->x;
+	 $dy=$points[$arr->y]->y-$points[$arr->x]->y;
 	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
-	 $dx=$x[$arr[2]]-$x[$arr[1]];
-	 $dy=$y[$arr[2]]-$y[$arr[1]];
+	 
+	 $dx=$points[$arr->z]->x-$points[$arr->y]->x;
+	 $dy=$points[$arr->z]->y-$points[$arr->y]->y;
 	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
-         $dx=$x[$arr[0]]-$x[$arr[2]];
-	 $dy=$y[$arr[0]]-$y[$arr[2]];
+         
+	 $dx=$points[$arr->x]->x-$points[$arr->z]->x;
+	 $dy=$points[$arr->x]->y-$points[$arr->z]->y;
 	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
       }
-      return $v;
-   }
+      return count($v);
+   }      
    
-   function main($pointset=0,$stageWidth=400,$stageHeight=400,$shape=0,$weight=6.899)
+   function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$weight=6.899)
    {
       $this->stageWidth = $stageWidth;
       $this->stageHeight = $stageHeight;
@@ -600,30 +619,28 @@ class Contourplot
 	 list($this->nvertx[],$this->nverty[])=$arr;
       }
       
-      if ($pointset==0)
+      if ($points==0)
       {         
          for ($i=0; $i<1000; $i++) 
          {
             list($x,$y)=array((float)rand(1,$this->stageWidth),(float)rand(1,$this->stageHeight));
-            $this->pointset[]=array($x,$y);
+            $this->points[]=new Point($x,$y);
          }
       } else
       { 
-         $this->pointset=$pointset;   
+         for ($i=0,$end=count($points);$i<$end;$i++)
+	 {
+	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2]);
+	 } 
       }
 
       $x=$y=$sortX=array(); 
-      foreach($this->pointset as $key=>$arr)
+      foreach($this->points as $key=>$arr)
       {
-         $sortX[$key]=$arr[0];
+         $sortX[$key]=$arr->x;
       } 
-      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->pointset);
-         
-      foreach ($this->pointset as $key=>$arr)
-      {
-        list($x[],$y[],$z[]) = $arr;
-      }
-      $result=$this->getEdges(count($this->pointset), $x, $y);
+      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->points);
+      $result=$this->getEdges(count($this->points), $this->points);
    
       $sum=$c=0;
       foreach ($this->dist as $key => $arr)
@@ -636,61 +653,40 @@ class Contourplot
       }
       $this->average=$sum/$c*$this->weight;
       
-      foreach ($this->delaunay as $key => $arr)
-      {       
-         $this->cc[$key]=$this->CircumCircle($arr[0][0],$arr[0][1],
-                                             $arr[0][2],$arr[0][3],
-                                             $arr[1][2],$arr[1][3]);
-      }    
-   
+      $n=count($this->points);
       foreach ($this->indices as $key => $arr)
       {
          foreach ($this->indices as $ikey => $iarr)
          {
             if ($key != $ikey)
             {
-               if ( ($arr[0]==$iarr[1] && $arr[1]==$iarr[0]) ||
-                    ($arr[0]==$iarr[2] && $arr[1]==$iarr[1]) ||
-                    ($arr[0]==$iarr[3] && $arr[1]==$iarr[2]) ||
+//	       if ( ($arr[0]==$iarr[1] && $arr[1]==$iarr[0]) ||
+//                    ($arr[0]==$iarr[2] && $arr[1]==$iarr[1]) ||
+//                    ($arr[0]==$iarr[3] && $arr[1]==$iarr[2]) ||
+//                                 
+//                    ($arr[1]==$iarr[1] && $arr[2]==$iarr[0]) ||
+//                    ($arr[1]==$iarr[2] && $arr[2]==$iarr[1]) ||
+//                    ($arr[1]==$iarr[3] && $arr[2]==$iarr[2]) ||
+//                    
+//                    ($arr[2]==$iarr[1] && $arr[3]==$iarr[0]) ||
+//                    ($arr[2]==$iarr[2] && $arr[3]==$iarr[1]) ||
+//                    ($arr[2]==$iarr[3] && $arr[3]==$iarr[2]) 
+//                  )
+	       
+	       if ( ($arr->x==$iarr->y && $arr->y==$iarr->x) ||
+                    ($arr->x==$iarr->z && $arr->y==$iarr->y) ||
+                    ($arr->x==$iarr->x && $arr->y==$iarr->z) ||
                                  
-                    ($arr[1]==$iarr[1] && $arr[2]==$iarr[0]) ||
-                    ($arr[1]==$iarr[2] && $arr[2]==$iarr[1]) ||
-                    ($arr[1]==$iarr[3] && $arr[2]==$iarr[2]) ||
+                    ($arr->y==$iarr->y && $arr->z==$iarr->x) ||
+                    ($arr->y==$iarr->z && $arr->z==$iarr->y) ||
+                    ($arr->y==$iarr->x && $arr->z==$iarr->z) ||
                     
-                    ($arr[2]==$iarr[1] && $arr[3]==$iarr[0]) ||
-                    ($arr[2]==$iarr[2] && $arr[3]==$iarr[1]) ||
-                    ($arr[2]==$iarr[3] && $arr[3]==$iarr[2]) 
+                    ($arr->z==$iarr->y && $arr->x==$iarr->x) ||
+                    ($arr->z==$iarr->z && $arr->x==$iarr->y) ||
+                    ($arr->z==$iarr->x && $arr->x==$iarr->z) 
                   )
                {
-                  $this->voronoi[$key][$ikey]=array($this->cc[$key], $this->cc[$ikey]);
- 		  $this->quads[$key][$ikey]=$this->delaunay[$key];
-               }
-            }
-         }
-      }
-      
-      $n=count($this->pointset);
-      foreach ($this->indices as $key => $arr)
-      {
-         foreach ($this->indices as $ikey => $iarr)
-         {
-            if ($key != $ikey)
-            {
-               if ( ($arr[0]==$iarr[1] && $arr[1]==$iarr[0]) ||
-                    ($arr[0]==$iarr[2] && $arr[1]==$iarr[1]) ||
-                    ($arr[0]==$iarr[3] && $arr[1]==$iarr[2]) ||
-                                 
-                    ($arr[1]==$iarr[1] && $arr[2]==$iarr[0]) ||
-                    ($arr[1]==$iarr[2] && $arr[2]==$iarr[1]) ||
-                    ($arr[1]==$iarr[3] && $arr[2]==$iarr[2]) ||
-                    
-                    ($arr[2]==$iarr[1] && $arr[3]==$iarr[0]) ||
-                    ($arr[2]==$iarr[2] && $arr[3]==$iarr[1]) ||
-                    ($arr[2]==$iarr[3] && $arr[3]==$iarr[2]) 
-                    
-                  )
-               {
-		  if ($arr[0] >= $n || $arr[1] >= $n || $arr[2] >= $n || $arr[3] >= $n)
+		  if ($arr->x >= $n || $arr->y >= $n || $arr->z >= $n)
 		  {   
 		     $this->hull[$key]=$this->delaunay[$key];
 		  } else
@@ -709,20 +705,20 @@ class Contourplot
          }
       }
       
-//      $this->nertx=$this->nerty=array();
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2)=$iarr;
-//	    $this->nertx[]=$x1;
-//	    $this->nerty[]=$y1;
-//	    $this->nertx[]=$x2;
-//	    $this->nerty[]=$y2;
-//	 }
-//      }
+      $this->nvertx=$this->nverty=array();
+      foreach ($this->hull as $key => $arr)
+      {
+	 foreach ($arr as $ikey => $iarr)
+	 {
+	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+	    $this->nvertx[]=$x1;
+	    $this->nverty[]=$y1;
+	    $this->nvertx[]=$x2;
+	    $this->nverty[]=$y2;
+	 }
+      }
       
-      
+      return $result;
    }
 }
 ?>
