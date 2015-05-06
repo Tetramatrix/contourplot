@@ -113,11 +113,13 @@ class Image
       $this->padding=20;
       $this->delaunay=$pObj->delaunay;
       $this->average=$pObj->average;
+      $this->average2=$pObj->average2;
       $this->shape=$pObj->shape;
       $this->hull=$pObj->hull;
       $this->nvertx=$pObj->nvertx;
       $this->nverty=$pObj->nverty;
       $this->pointset=$pObj->pointset;
+      $this->indices=$pObj->indices;
    }
    
    function erropen()
@@ -176,31 +178,20 @@ class Image
 	    $edge[]=$d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
-	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+	    if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
 	      $ok=1; 
 	    }	       
-	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+	    if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
 	      $ok=1; 
-	    }	       
-	    if (($ok && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
+	    }
+	    
+	    if ((!$ok && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
 		|| ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE))
 	    {
-	       $ok=0;
-	       foreach ($this->shape as $iikey => $iiarr)
-	       {
-		  list($x,$y)=$iiarr;
-		  if (array($x,$y)==array($x1,$y1) || array($x,$y)==array($x2,$y2))
-		  {
-		     $ok=1;
-		  }
-	       }
-	       if ($ok==0)
-	       {
-		  $points[$key][]=$x1+$this->padding;
-		  $points[$key][]=$y1+$this->padding;
-		  $points[$key][]=$x2+$this->padding;
-		  $points[$key][]=$y2+$this->padding;
-	       }
+	       $points[$key][]=$x1+$this->padding;
+	       $points[$key][]=$y1+$this->padding;
+	       $points[$key][]=$x2+$this->padding;
+	       $points[$key][]=$y2+$this->padding;	       
 	    }
 	 }
 	 
@@ -211,14 +202,13 @@ class Image
 	 $average/=3;
       }
       
+      $dump=array();
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
 	 if ($num >=3 && $this->hull[$key]) {
 	    for($i=0;$i<$num;$i+=2) {
 	       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$arr[$i],$arr[$i+1])) {
-		  $ok=1;
-		  $hull[$key][]=$arr[$i];
-		  $hull[$key][]=$arr[$i+1];
+		  $dump[$arr[$i].$arr[$i+1]]++;
 		  unset($arr[$i]);
 		  unset($arr[$i+1]);
 		  --$num;
@@ -235,27 +225,52 @@ class Image
 	 if (count($arr)/2 >=3) {
 	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
 	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $blue);
-	       if (!$this->hull[$key]) {
-		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
-	       }
+	       imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
 	    }
 	 }
       }
       
-      foreach ($this->hull as $key => $arr)
-      {
-	 foreach ($arr as $ikey => $iarr)
-	 {
-	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-	    $dx = $x2-$x1;
-	    $dy = $y2-$y1;
-	    $d = $dx*$dx+$dy*$dy;
-	    if ($d<$this->average && abs($x1)!= SUPER_TRIANGLE && abs($y1)!= SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
-	    {
-	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red); 	       
-	    }
-	 }
-      }
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+//	    $dx = $x2-$x1;
+//	    $dy = $y2-$y1;
+//	    $d = $dx*$dx+$dy*$dy;
+//	    if ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
+//	    {
+//	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red); 	       
+//	    }
+//	 }
+//      }
+      
+//      $s=array();
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+//	    $dx = $x2-$x1;
+//	    $dy = $y2-$y1;
+//	    $d = $dx*$dx+$dy*$dy;
+//	    
+//	    //if (abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
+//	    //if ($d<$this->average2*2)
+//	    //{
+//	       $s[$key][]=$x1+$this->padding;
+//	       $s[$key][]=$y1+$this->padding;
+//	       $s[$key][]=$x2+$this->padding;
+//	       $s[$key][]=$y2+$this->padding;
+//	    //}  
+//	 }
+//      }
+//      
+//      foreach ($s as $key=>$arr) {
+//	 //if (!$dump[$arr[0].$arr[1]] || !$dump[$arr[2].$arr[3]] || !$dump[$arr[1].$arr[0]] || !$dump[$arr[3].$arr[2]]) {
+//	    imageline($im,$arr[0],$arr[1],$arr[2],$arr[3],$red);
+//	// }
+//      }
       
       flush();
       ob_start();
@@ -570,16 +585,6 @@ function getEdges($n, $points)
 					  $points[$arr->x]->x,$points[$arr->x]->y                                 
 				   );
 	 
-//	 $dx=$x[$arr[1]]-$x[$arr[0]];
-//	 $dy=$y[$arr[1]]-$y[$arr[0]];
-//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
-//	 $dx=$x[$arr[2]]-$x[$arr[1]];
-//	 $dy=$y[$arr[2]]-$y[$arr[1]];
-//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
-//         $dx=$x[$arr[0]]-$x[$arr[2]];
-//	 $dy=$y[$arr[0]]-$y[$arr[2]];
-//	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
-
 	 $dx=$points[$arr->y]->x-$points[$arr->x]->x;
 	 $dy=$points[$arr->y]->y-$points[$arr->x]->y;
 	 $this->dist[$key][]=$dx*$dx+$dy*$dy;
@@ -610,7 +615,7 @@ function getEdges($n, $points)
       return $c;
    }
    
-   function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$weight=6.899)
+   function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$data=0,$weight=6.899)
    {
       $this->stageWidth = $stageWidth;
       $this->stageHeight = $stageHeight;
@@ -620,16 +625,17 @@ function getEdges($n, $points)
       $this->hull = array();
       $this->weight = $weight;
       $this->shape=$shape;
+      $this->data=$data;
       
       $sortX = array();
-      foreach($this->shape as $key => $arr)
+      foreach($this->data as $key => $arr)
       {
          $sortX[$key] = $arr[0];
       } 
-      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->shape);
+      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->data);
       
       $this->nvertx=$this->nverty=array(); 
-      foreach($this->shape as $key => $arr)
+      foreach($this->data as $key => $arr)
       {
 	 list($this->nvertx[],$this->nverty[])=$arr;
       }
@@ -675,20 +681,7 @@ function getEdges($n, $points)
          foreach ($this->indices as $ikey => $iarr)
          {
             if ($key != $ikey)
-            {
-//	       if ( ($arr[0]==$iarr[1] && $arr[1]==$iarr[0]) ||
-//                    ($arr[0]==$iarr[2] && $arr[1]==$iarr[1]) ||
-//                    ($arr[0]==$iarr[3] && $arr[1]==$iarr[2]) ||
-//                                 
-//                    ($arr[1]==$iarr[1] && $arr[2]==$iarr[0]) ||
-//                    ($arr[1]==$iarr[2] && $arr[2]==$iarr[1]) ||
-//                    ($arr[1]==$iarr[3] && $arr[2]==$iarr[2]) ||
-//                    
-//                    ($arr[2]==$iarr[1] && $arr[3]==$iarr[0]) ||
-//                    ($arr[2]==$iarr[2] && $arr[3]==$iarr[1]) ||
-//                    ($arr[2]==$iarr[3] && $arr[3]==$iarr[2]) 
-//                  )
-	       
+            {	       
 	       if ( ($arr->x==$iarr->y && $arr->y==$iarr->x) ||
                     ($arr->x==$iarr->z && $arr->y==$iarr->y) ||
                     ($arr->x==$iarr->x && $arr->y==$iarr->z) ||
@@ -707,23 +700,23 @@ function getEdges($n, $points)
 		     $this->hull[$key]=$this->delaunay[$key];
 		  } else
 		  {
-		//     list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->points[$arr->x]->x,$this->points[$arr->x]->y,
-		//				         $this->points[$arr->y]->x,$this->points[$arr->x]->y,
-		//				         $this->points[$arr->z]->x,$this->points[$arr->z]->y,
-		//				       );		     
-		//     $ok=0;
-		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
-		//       $ok=1; 
-		//     }	       
-		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
-		//       $ok=1; 
-		//     }
-		//     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x3,$y3)) {
-		//       $ok=1; 
-		//     }
+		     list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->points[$arr->x]->x,$this->points[$arr->x]->y,
+						         $this->points[$arr->y]->x,$this->points[$arr->x]->y,
+						         $this->points[$arr->z]->x,$this->points[$arr->z]->y,
+						       );		     
+		     $ok=0;
+		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+		       $ok=1; 
+		     }	       
+		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+		       $ok=1; 
+		     }
+		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x3,$y3)) {
+		       $ok=1; 
+		     }
 		     foreach ($this->dist[$key] as $iikey => $iiarr)
 		     {
-			if ($iiarr>$this->average)
+			if ($ok && $iiarr>$this->average)
 			{
 			   $sum+=$iiarr;
 			   $c++;
@@ -739,6 +732,25 @@ function getEdges($n, $points)
       
       $this->average2=$sum/$c*$this->weight;
       
+//      foreach ($this->hull as $key => $arr)
+//      {
+//	 foreach ($arr as $ikey => $iarr)
+//	 {
+//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+//	    
+//	    $ok=0;
+//	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+//	      $ok=1; 
+//	    }	       
+//	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+//	      $ok=1; 
+//	    }
+//	    if (!$ok) {
+//	       unset($this->hull[$key]);
+//	    }
+//	 }
+//      }
+	    
 //      $this->nvertx=$this->nverty=array();
 //      foreach ($this->hull as $key => $arr)
 //      {
@@ -752,26 +764,7 @@ function getEdges($n, $points)
 //	 }
 //      }
 
-//      $filter=$this->points;
-//      foreach ($filter as $key => $arr) {
-//	 if ($arr->z===null) {
-//	    unset($filter[$key]);
-//	 }
-//      }
-//      
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
-//	    foreach ($filter as $iikey => $iiarr) {
-//	       if ($x1==$iiarr->x && $y1==$iiarr->y || $x2==$iiarr->x && $y2==$iiarr->y) {
-//		  unset($this->hull[$key]);
-//		  break;
-//	       }
-//	    }
-//	 }
-//      }
+
       
       return $result;
    }

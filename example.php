@@ -8,7 +8,7 @@
 ***************************************************************/
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
-define("ALPHA",3.6);
+define("ALPHA",2.5);
 define("OMEGA",2);
 
 require_once("mercator.php");
@@ -26,13 +26,17 @@ $shape=$s->loadfile("PAShapeFile.txt");
 $res=$s->project($shape);
 $filter=$s->filter($s->proj,OMEGA);
 
-$map=new mercator(MAPWIDTH,MAPHEIGHT);
-$arr=$map->loadfileZ("PennsylvaniaLonLatT.txt");
+$d=new mercator(MAPWIDTH,MAPHEIGHT);
+$arr=$d->loadfileZ("PennsylvaniaLonLatT.txt");
+$res=$d->project($arr);
+
+$f=new mercator(MAPWIDTH,MAPHEIGHT);
+$arr=$f->loadfileZ("PennsylvaniaLonLatT.txt");
 $arr=array_merge($arr,$filter);
-$res=$map->project($arr);
+$res=$f->project($arr);
 
 $plot=new Contourplot();
-$res=$plot->main($res,$map->mapWidth,$map->mapHeight,$s->proj,ALPHA);
+$res=$plot->main($res,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,ALPHA);
  
 $pic=new Image("/tmp/",$plot);
 $pic->create();
