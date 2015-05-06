@@ -125,7 +125,7 @@ class Image
       $this->hull=$pObj->hull;
       $this->nvertx=$pObj->nvertx;
       $this->nverty=$pObj->nverty;
-      $this->pointset=$pObj->pointset;
+      $this->points=$pObj->points;
       $this->indices=$pObj->indices;
    }
    
@@ -147,7 +147,7 @@ class Image
       for ($i=0, $j=$nvert-1; $i<$nvert; $j=$i++)
       {
 	if ((($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
-	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]) )
+	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]))
 	 {
 	    $c=1;
 	    break;
@@ -174,7 +174,7 @@ class Image
       $subject=$points=array();
       // Fill in the background of the image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
-      
+
       foreach ($this->delaunay as $key => $arr)
       {
 	 foreach ($arr as $ikey => $iarr)
@@ -193,15 +193,13 @@ class Image
 	    }
 	    
 	    if ((!$ok && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE)
-		|| ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE))
+	       || ($d<$this->average && abs($x1) != SUPER_TRIANGLE && abs($y1) != SUPER_TRIANGLE && abs($x2) != SUPER_TRIANGLE && abs($y2) != SUPER_TRIANGLE))
 	    {
 	       $points[$key][]=$x1+$this->padding;
 	       $points[$key][]=$y1+$this->padding;
 	       $points[$key][]=$x2+$this->padding;
 	       $points[$key][]=$y2+$this->padding;
-	       
-	       $subject[$key][]=$iarr->x->alpha;
-	       $subject[$key][]=$iarr->y->alpha;
+	       $subject[$key][$ikey]=$this->indices[$key]->$ikey;
 	    }
 	 }
       }
@@ -221,14 +219,24 @@ class Image
 	 }
 	 if ($num>=3 && !$this->hull[$key]) {
 	    $arr=array_values($arr);
-	    imagefilledpolygon($im,$arr,$num,$gray_lite);
+	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
+	    $averageZ=($this->points[$subject[$key]["x"]]->z+$this->points[$subject[$key]["y"]]->z+$this->points[$subject[$key]["z"]]->z)/3;
+	    
+	    $col = $gray_lite;
+	    if ($averageZ>$averageX) {
+	       $col = $blue;  
+	    }
+	    else {
+	       $col = $red;
+	    }
+	    imagefilledpolygon($im,$arr,$num,$col);
 	 }
       }
        
       foreach ($points as $key=>$arr) {
 	 if (count($arr)/2 >=3) {
 	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
-	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $blue);
+	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
 	       imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
 	    }
 	 }
@@ -543,8 +551,7 @@ function getEdges($n, $points)
                   } else if (($earr->x == $iarr->x) && ($earr->y == $iarr->y))
                   {
                      unset($edges[$ekey]);
-                     unset($edges[$ikey]);
-                 
+                     unset($edges[$ikey]);   
 		  }
                }
             }

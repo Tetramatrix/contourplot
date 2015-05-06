@@ -8,8 +8,8 @@
 ***************************************************************/
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
-define("ALPHA",2.5);
-define("OMEGA",2);
+define("ALPHA",2.3);
+define("OMEGA",1);
 
 require_once("mercator.php");
 require_once("contour.php");
@@ -22,7 +22,7 @@ if( !ini_get('safe_mode') )
 set_time_limit(10000);
 
 $s=new mercator(MAPWIDTH,MAPHEIGHT);
-$shape=$s->loadfile("PAShapeFile.txt");
+$shape=$s->loadfileZ("PAShapeFile.txt");
 $res=$s->project($shape);
 $filter=$s->filter($s->proj,OMEGA);
 

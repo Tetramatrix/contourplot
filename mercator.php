@@ -62,8 +62,11 @@ class mercator {
       $file = fopen($filename, "r");
       while (!feof($file))
       {
-          list($lon,$lat,$z)=explode(",",rtrim(fgets($file)));
-          $arr[]="$lon,$lat,$z"; 
+         list($lon,$lat,$z)=explode(",",rtrim(fgets($file)));
+         if ($z===null) {
+            $z=rand(0,100);
+         }
+         $arr[]="$lon,$lat,$z"; 
       }
       fclose($file);
       return $arr;
@@ -109,8 +112,8 @@ class mercator {
       }
       $filter=array();
       foreach ($set as $key => $arr) {
-         list($lon,$lat)=explode(",",$this->set[$key]);
-         $filter[]="$lon,$lat";
+         list($lon,$lat,$z)=explode(",",$this->set[$key]);
+         $filter[]="$lon,$lat,$z";
       }
       return $filter;
    }
