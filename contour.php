@@ -43,17 +43,24 @@ class Edge
       } else if($field == 'y')
       {
 	 return $this->e->y;
+      } else if($field == 'alpha') {
+	 if($this->e->alpha==0) {
+	    return rand(0,100);
+	 } else {
+	    return $this->e->alpha;
+	 }
       }
    }
 }
 
 class Point
 {
-   var $x,$y,$z;
-   function __construct($x=0,$y=0,$z=0) {
+   var $x,$y,$z,$alpha;
+   function __construct($x=0,$y=0,$z=0,$alpha=0) {
       $this->x=$x;
       $this->y=$y;
       $this->z=$z;
+      $this->alpha=$alpha;
    }
 }
 
@@ -164,18 +171,18 @@ class Image
       $red = imagecolorallocate ($im,0xff,0x00,0x00);
       $purple = imagecolorallocate ($im,0x80,0x00,0x80);
       
-      $points=array();
+      $subject=$points=array();
       // Fill in the background of the image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
+      
       foreach ($this->delaunay as $key => $arr)
       {
-	 $edge=array();
 	 foreach ($arr as $ikey => $iarr)
 	 {
 	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
 	    $dx = $x2-$x1;
 	    $dy = $y2-$y1;
-	    $edge[]=$d=$dx*$dx+$dy*$dy;
+	    $d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
 	    if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
@@ -191,15 +198,12 @@ class Image
 	       $points[$key][]=$x1+$this->padding;
 	       $points[$key][]=$y1+$this->padding;
 	       $points[$key][]=$x2+$this->padding;
-	       $points[$key][]=$y2+$this->padding;	       
+	       $points[$key][]=$y2+$this->padding;
+	       
+	       $subject[$key][]=$iarr->x->alpha;
+	       $subject[$key][]=$iarr->y->alpha;
 	    }
 	 }
-	 
-	 $average=0;
-	 foreach ($edge as $iikey=>$iiarr) {
-	    $average+=sqrt($iiarr);
-	 }
-	 $average/=3;
       }
       
       $dump=array();
@@ -230,48 +234,39 @@ class Image
 	 }
       }
       
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-//	    $dx = $x2-$x1;
-//	    $dy = $y2-$y1;
-//	    $d = $dx*$dx+$dy*$dy;
-//	    if ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
-//	    {
-//	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red); 	       
-//	    }
-//	 }
-//      }
+      $v=$s=array();
+      foreach ($this->hull as $key => $arr)
+      {
+	 foreach ($arr as $ikey => $iarr)
+	 {
+	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
+	    $dx = $x2-$x1;
+	    $dy = $y2-$y1;
+	    $d = $dx*$dx+$dy*$dy;
+	    if ($d<$this->average)
+	    {
+	       $v[$x1.$y1]++;
+	       $v[$x2.$y2]++;
+	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red); 	       
+	    }
+	    if ($d<$this->average2 && abs($x1)==SUPER_TRIANGLE || abs($y1)==SUPER_TRIANGLE || abs($x2)==SUPER_TRIANGLE || abs($y2)==SUPER_TRIANGLE)
+	    {
+	       $s[$key]++;
+	    }
+	 }
+      }
       
-//      $s=array();
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-//	    $dx = $x2-$x1;
-//	    $dy = $y2-$y1;
-//	    $d = $dx*$dx+$dy*$dy;
-//	    
-//	    //if (abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
-//	    //if ($d<$this->average2*2)
-//	    //{
-//	       $s[$key][]=$x1+$this->padding;
-//	       $s[$key][]=$y1+$this->padding;
-//	       $s[$key][]=$x2+$this->padding;
-//	       $s[$key][]=$y2+$this->padding;
-//	    //}  
-//	 }
-//      }
-//      
-//      foreach ($s as $key=>$arr) {
-//	 //if (!$dump[$arr[0].$arr[1]] || !$dump[$arr[2].$arr[3]] || !$dump[$arr[1].$arr[0]] || !$dump[$arr[3].$arr[2]]) {
-//	    imageline($im,$arr[0],$arr[1],$arr[2],$arr[3],$red);
-//	// }
-//      }
-      
+      foreach ($s as $key=>$arr) {
+	 foreach ($this->hull[$key] as $ikey => $iarr)
+	 {
+	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
+	    if (($v[$x1.$y1]<2 ||$v[$x2.$y2]<2) && (abs($x1)!=SUPER_TRIANGLE &&
+		  abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)) {
+	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red);
+	    }
+	 }
+      }
+            
       flush();
       ob_start();
       imagepng($im);
@@ -651,7 +646,7 @@ function getEdges($n, $points)
       { 
          for ($i=0,$end=count($points);$i<$end;$i++)
 	 {
-	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2]);
+	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],rand(0,100));
 	 } 
       }
 
@@ -731,41 +726,6 @@ function getEdges($n, $points)
       }
       
       $this->average2=$sum/$c*$this->weight;
-      
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-//	    
-//	    $ok=0;
-//	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
-//	      $ok=1; 
-//	    }	       
-//	    if ($this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
-//	      $ok=1; 
-//	    }
-//	    if (!$ok) {
-//	       unset($this->hull[$key]);
-//	    }
-//	 }
-//      }
-	    
-//      $this->nvertx=$this->nverty=array();
-//      foreach ($this->hull as $key => $arr)
-//      {
-//	 foreach ($arr as $ikey => $iarr)
-//	 {
-//	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
-//	    $this->nvertx[]=$x1;
-//	    $this->nverty[]=$y1;
-//	    $this->nvertx[]=$x2;
-//	    $this->nverty[]=$y2;
-//	 }
-//      }
-
-
-      
       return $result;
    }
 }
