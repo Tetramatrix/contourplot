@@ -64,7 +64,7 @@ class mercator {
       {
          list($lon,$lat,$z)=explode(",",rtrim(fgets($file)));
          if ($z===null) {
-            $z=rand(0,100);
+            $z=rand(MINRAND,MAXRAND);
          }
          $arr[]="$lon,$lat,$z"; 
       }

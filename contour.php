@@ -160,7 +160,7 @@ class Image
    function create()
    {
          // Generate the image variables
-      $im = imagecreate($this->stageWidth+200,$this->stageHeight+200);
+      $im = imagecreatetruecolor($this->stageWidth+200,$this->stageHeight+200);
       $white = imagecolorallocate ($im,0xff,0xff,0xff);
       $black = imagecolorallocate($im,0x00,0x00,0x00);
       $gray_lite = imagecolorallocate ($im,0xee,0xee,0xee);
@@ -224,10 +224,12 @@ class Image
 	    
 	    $col = $gray_lite;
 	    if ($averageZ>$averageX) {
-	       $col = $blue;  
+	       $delta=min(($averageZ-$averageX)*(255/STEPS),255);
+	       $col = imagecolorallocate ($im,$delta,$delta,255);
 	    }
 	    else {
-	       $col = $red;
+	       $delta=min(($averageX-$averageZ)*(255/STEPS),255);
+	       $col = imagecolorallocate ($im,255,$delta,$delta);
 	    }
 	    imagefilledpolygon($im,$arr,$num,$col);
 	 }
@@ -653,7 +655,7 @@ function getEdges($n, $points)
       { 
          for ($i=0,$end=count($points);$i<$end;$i++)
 	 {
-	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],rand(0,100));
+	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],rand(MINRAND,MAXRAND));
 	 } 
       }
 

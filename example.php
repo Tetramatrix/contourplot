@@ -10,6 +10,9 @@ define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 define("ALPHA",2.3);
 define("OMEGA",1);
+define("MINRAND",40);
+define("MAXRAND",60);
+define("STEPS",10);
 
 require_once("mercator.php");
 require_once("contour.php");
