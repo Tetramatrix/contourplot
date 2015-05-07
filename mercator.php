@@ -63,9 +63,9 @@ class mercator {
       while (!feof($file))
       {
          list($lon,$lat,$z)=explode(",",rtrim(fgets($file)));
-         if ($z===null) {
-            $z=rand(MINRAND,MAXRAND);
-         }
+         //if ($z===null) {
+         //   $z=rand(MINRAND,MAXRAND);
+         //}
          $arr[]="$lon,$lat,$z"; 
       }
       fclose($file);
@@ -118,7 +118,7 @@ class mercator {
       return $filter;
    }
    
-   function project($arr) 
+   function project($arr,$mean=0) 
    {
       $sum=$c=0;
       foreach ($arr as $key => $arr2) 
@@ -130,7 +130,11 @@ class mercator {
          $this->mapLonRight = max($this->mapLonRight,$lon); 
          $this->mapLatBottom = min( $this->mapLatBottom,$lat); 
          $this->mapLatTop = max($this->mapLatTop,$lat); 
-         $this->set[]=array($lon,$lat,$z); 
+         if ($mean!=0) {
+            $this->set[]=array($lon,$lat,$mean);
+         } else {
+            $this->set[]=array($lon,$lat,$z);
+         }
       } 
 
       $mapLonDelta =  $this->mapLonRight - $this->mapLonLeft; 
@@ -154,10 +158,20 @@ class mercator {
          $tx = ($lon-$this->mapLonLeft)*($newWidth/$mapLonDelta)*$mapRatioW; 
          $f = sin($lat*M_PI/180); 
          $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
-         $this->proj[]=array($tx,$ty,$z);
+         
+         if ($mean!=0) {
+            $this->proj[]=array($tx,$ty,$mean);
+         } else {
+            $this->proj[]=array($tx,$ty,$z);
+         }
       }
+      
       $this->set=$this->convert($this->set);          
-      return $sum/$c;
+      if ($mean!=0) {
+         return $mean;
+      } else {
+         return $sum/$c;
+      }
    }
 }
 ?>

@@ -12,7 +12,10 @@ define("ALPHA",2.3);
 define("OMEGA",1);
 define("MINRAND",40);
 define("MAXRAND",60);
-define("STEPS",10);
+define("STEPS",5);
+define("PATH","/tmp/");
+define("SHAPEFILE","PAShapeFile.txt");
+define("DATAFILE","PennsylvaniaLonLatT.txt");
 
 require_once("mercator.php");
 require_once("contour.php");
@@ -24,25 +27,24 @@ if( !ini_get('safe_mode') )
 }
 set_time_limit(10000);
 
-$s=new mercator(MAPWIDTH,MAPHEIGHT);
-$shape=$s->loadfileZ("PAShapeFile.txt");
-$mean=$s->project($shape);
-$filter=$s->filter($s->proj,OMEGA);
-
 $d=new mercator(MAPWIDTH,MAPHEIGHT);
-$arr=$d->loadfileZ("PennsylvaniaLonLatT.txt");
+$arr=$d->loadfileZ(DATAFILE);
 $mean=$d->project($arr);
 
+$s=new mercator(MAPWIDTH,MAPHEIGHT);
+$shape=$s->loadfileZ(SHAPEFILE);
+$m=$s->project($shape,$mean);
+$filter=$s->filter($s->proj,OMEGA);
+
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
-$arr=$f->loadfileZ("PennsylvaniaLonLatT.txt");
+$arr=$f->loadfileZ(DATAFILE);
 $arr=array_merge($arr,$filter);
-$mean=$f->project($arr);
+$m=$f->project($arr);
 
 $plot=new Contourplot();
 $res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,$mean,ALPHA);
  
-$pic=new Image("/tmp/",$plot);
+$pic=new Image(PATH,$plot);
 $pic->create();
-
 
 ?>

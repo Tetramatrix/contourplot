@@ -125,6 +125,8 @@ class Image
       $this->hull=$pObj->hull;
       $this->nvertx=$pObj->nvertx;
       $this->nverty=$pObj->nverty;
+      $this->svertx=$pObj->svertx;
+      $this->sverty=$pObj->sverty;
       $this->points=$pObj->points;
       $this->indices=$pObj->indices;
    }
@@ -163,8 +165,8 @@ class Image
       $im = imagecreatetruecolor($this->stageWidth+200,$this->stageHeight+200);
       $white = imagecolorallocate ($im,0xff,0xff,0xff);
       $black = imagecolorallocate($im,0x00,0x00,0x00);
-      $gray_lite = imagecolorallocate ($im,0xee,0xee,0xee);
-      $gray_dark = imagecolorallocate ($im,0x7f,0x7f,0x7f);
+      $grey_lite = imagecolorallocate ($im,0xee,0xee,0xee);
+      $grey_dark = imagecolorallocate ($im,0x7f,0x7f,0x7f);
       $firebrick = imagecolorallocate ($im,0xb2,0x22,0x22);
       $blue = imagecolorallocate ($im,0x00,0x00,0xff);
       $darkorange = imagecolorallocate ($im,0xff,0x8c,0x00);
@@ -204,19 +206,67 @@ class Image
 	 }
       }
       
-      $dump=array();
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
-	 if ($num >=3 && $this->hull[$key]) {
-	    for($i=0;$i<$num;$i+=2) {
-	       if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$arr[$i],$arr[$i+1])) {
-		  $dump[$arr[$i].$arr[$i+1]]++;
+	 if ($num>=3 && !$this->hull[$key]) {
+	    $ok=0;
+	    if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	      $ok=1; 
+	    }
+	    if ($ok) {
+	       unset($arr[$i]);
+	       unset($arr[$i+1]);
+	       --$num;
+	    }
+	 }
+	 $arr=array_values($arr);
+	 if ($num>=3 && $this->hull[$key]) {
+	    $ok=0;
+	    if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	      $ok=1; 
+	    }
+	    if ($ok) {
+	       unset($arr[$i]);
+	       unset($arr[$i+1]);
+	       --$num;
+	    }
+	 }
+	 $arr=array_values($arr);
+	 if ($num>=3 && !$this->hull[$key]) {
+	    for($i=0;$i<$num;$i+=4) {
+	       $ok=0;
+	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+		  $ok=1; 
+	       }
+	       if ($ok) {
 		  unset($arr[$i]);
 		  unset($arr[$i+1]);
+		  unset($arr[$i+2]);
+		  unset($arr[$i+3]);
+		  --$num;
 		  --$num;
 	       }
 	    }
 	 }
+	 $arr=array_values($arr);
+	 if ($num>=3 && $this->hull[$key]) {
+	    for($i=0;$i<$num;$i+=4) {
+	       $ok=0;
+	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+		 $ok=1; 
+	       }
+	       if ($ok) {
+		  unset($arr[$i]);
+		  unset($arr[$i+1]);
+		  unset($arr[$i+2]);
+		  unset($arr[$i+3]);
+		  --$num;
+		  --$num;
+	       }
+	    }
+	 }
+	 $arr=array_values($arr);
+	 $num=count($arr)/2;
 	 if ($num>=3 && !$this->hull[$key]) {
 	    $arr=array_values($arr);
 	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
@@ -238,7 +288,20 @@ class Image
 	 if (count($arr)/2 >=3) {
 	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
 	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
-	       imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$gray_dark);
+	       
+	       $ok=0;
+	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+		 $ok=1; 
+	       }	       
+	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i+2],$arr[$i+3])) {
+		 $ok=1; 
+	       }
+	       if ($this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+		 $ok=0; 
+	       }
+	       if (!$ok) {   
+		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
+	       } 
 	    }
 	 }
       }
@@ -256,7 +319,7 @@ class Image
 	    {
 	       $v[$x1.$y1]++;
 	       $v[$x2.$y2]++;
-	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red); 	       
+	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$grey_dark); 	       
 	    }
 	    if ($d<$this->average2 && abs($x1)==SUPER_TRIANGLE || abs($y1)==SUPER_TRIANGLE || abs($x2)==SUPER_TRIANGLE || abs($y2)==SUPER_TRIANGLE)
 	    {
@@ -271,7 +334,7 @@ class Image
 	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
 	    if (($v[$x1.$y1]<2 ||$v[$x2.$y2]<2) && (abs($x1)!=SUPER_TRIANGLE &&
 		  abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)) {
-	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$red);
+	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$grey_dark);
 	    }
 	 }
       }
@@ -642,6 +705,19 @@ function getEdges($n, $points)
       foreach($this->data as $key => $arr)
       {
 	 list($this->nvertx[],$this->nverty[])=$arr;
+      }
+      
+      $sortX = array();
+      foreach($this->shape as $key => $arr)
+      {
+         $sortX[$key] = $arr[0];
+      } 
+      array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->shape);
+      
+      $this->svertx=$this->sverty=array(); 
+      foreach($this->shape as $key => $arr)
+      {
+	 list($this->svertx[],$this->sverty[])=$arr;
       }
       
       if ($points==0)
