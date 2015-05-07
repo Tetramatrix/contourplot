@@ -222,13 +222,12 @@ class Image
 	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
 	    $averageZ=($this->points[$subject[$key]["x"]]->z+$this->points[$subject[$key]["y"]]->z+$this->points[$subject[$key]["z"]]->z)/3;
 	    
-	    $col = $gray_lite;
-	    if ($averageZ>$averageX) {
-	       $delta=min(($averageZ-$averageX)*(255/STEPS),255);
+	    if ($averageX>$averageZ) {
+	       $delta=min(($averageX-$averageZ)*(255/STEPS),255);
 	       $col = imagecolorallocate ($im,$delta,$delta,255);
 	    }
 	    else {
-	       $delta=min(($averageX-$averageZ)*(255/STEPS),255);
+	       $delta=min(($averageZ-$averageX)*(255/STEPS),255);
 	       $col = imagecolorallocate ($im,255,$delta,$delta);
 	    }
 	    imagefilledpolygon($im,$arr,$num,$col);
@@ -619,7 +618,7 @@ function getEdges($n, $points)
       return $c;
    }
    
-   function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$data=0,$weight=6.899)
+   function main($points=0,$stageWidth=400,$stageHeight=400,$shape=0,$data=0,$mean,$weight=6.899)
    {
       $this->stageWidth = $stageWidth;
       $this->stageHeight = $stageHeight;
@@ -630,6 +629,7 @@ function getEdges($n, $points)
       $this->weight = $weight;
       $this->shape=$shape;
       $this->data=$data;
+      $this->mean=$mean;
       
       $sortX = array();
       foreach($this->data as $key => $arr)
@@ -655,7 +655,7 @@ function getEdges($n, $points)
       { 
          for ($i=0,$end=count($points);$i<$end;$i++)
 	 {
-	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],rand(MINRAND,MAXRAND));
+	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],$this->mean);
 	 } 
       }
 

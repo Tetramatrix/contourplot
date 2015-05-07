@@ -26,20 +26,20 @@ set_time_limit(10000);
 
 $s=new mercator(MAPWIDTH,MAPHEIGHT);
 $shape=$s->loadfileZ("PAShapeFile.txt");
-$res=$s->project($shape);
+$mean=$s->project($shape);
 $filter=$s->filter($s->proj,OMEGA);
 
 $d=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$d->loadfileZ("PennsylvaniaLonLatT.txt");
-$res=$d->project($arr);
+$mean=$d->project($arr);
 
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ("PennsylvaniaLonLatT.txt");
 $arr=array_merge($arr,$filter);
-$res=$f->project($arr);
+$mean=$f->project($arr);
 
 $plot=new Contourplot();
-$res=$plot->main($res,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,ALPHA);
+$res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,$mean,ALPHA);
  
 $pic=new Image("/tmp/",$plot);
 $pic->create();

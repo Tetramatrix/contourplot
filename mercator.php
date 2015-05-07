@@ -120,9 +120,12 @@ class mercator {
    
    function project($arr) 
    {
+      $sum=$c=0;
       foreach ($arr as $key => $arr2) 
       { 
-         list($lon,$lat,$z) = explode(",",$arr2); 
+         list($lon,$lat,$z) = explode(",",$arr2);
+         $sum+=$z;
+	 $c++;
          $this->mapLonLeft = min($this->mapLonLeft,$lon); 
          $this->mapLonRight = max($this->mapLonRight,$lon); 
          $this->mapLatBottom = min( $this->mapLatBottom,$lat); 
@@ -154,7 +157,7 @@ class mercator {
          $this->proj[]=array($tx,$ty,$z);
       }
       $this->set=$this->convert($this->set);          
-      return $this->proj;
+      return $sum/$c;
    }
 }
 ?>
