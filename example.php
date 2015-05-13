@@ -9,6 +9,7 @@
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 define("ALPHA",2.3);
+define("BETA",1);
 define("OMEGA",10);
 define("MINRAND",40);
 define("MAXRAND",60);

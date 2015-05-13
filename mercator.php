@@ -77,6 +77,7 @@ class mercator {
       $temp=array();
       for($i=0,$end=count($arr)-1;$i<$end;$i++) {
 	 list($x1,$y1,$z)=explode(",",$arr[$i]);
+	 
 	 if ($mean!=0) {
 	    $temp[]=array($x1,$y1,$mean);
 	 } else {
@@ -138,7 +139,7 @@ class mercator {
       return $filter;
    }
    
-   function project($arr,$mean=0) 
+   function project($arr,$mean=0,$beta=1) 
    {
       $sum=$c=0;
       foreach ($arr as $key => $arr2) 
@@ -179,6 +180,9 @@ class mercator {
          $f = sin($lat*M_PI/180); 
          $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
          
+	 $tx*=$beta;
+	 $ty*=$beta;
+	 
          if ($mean!=0) {
             $this->proj[]=array($tx,$ty,$mean);
          } else {

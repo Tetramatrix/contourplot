@@ -199,12 +199,16 @@ class Image
 	    $d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
-	    if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+	    $n=count($this->svertx);
+	    if (!$this->pnpoly($n,$this->nvertx,$this->nverty,$x1,$y1)) {
 	      $ok=1; 
 	    }	       
-	    if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+	    if (!$this->pnpoly($n,$this->nvertx,$this->nverty,$x2,$y2)) {
 	      $ok=1; 
 	    }
+	    if (!$this->pnpoly($n,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+	       $ok=1; 
+            }
 	    
 	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
 	       || ($d<$this->average && abs($x1)!= SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
@@ -250,9 +254,10 @@ class Image
       
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
+	 $n=count($this->svertx);
 	 if ($num>=3 && !$this->hull[$key]) {
 	    $ok=0;
-	    if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	    if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
 	      $ok=1; 
 	    }
 	    if ($ok) {
@@ -264,7 +269,7 @@ class Image
 	 $arr=array_values($arr);
 	 if ($num>=3 && $this->hull[$key]) {
 	    $ok=0;
-	    if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	    if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
 	      $ok=1; 
 	    }
 	    if ($ok) {
@@ -277,7 +282,7 @@ class Image
 	 if ($num>=3 && !$this->hull[$key]) {
 	    for($i=0;$i<$num;$i+=4) {
 	       $ok=0;
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
 		  $ok=1; 
 	       }
 	       if ($ok) {
@@ -294,7 +299,7 @@ class Image
 	 if ($num>=3 && $this->hull[$key]) {
 	    for($i=0;$i<$num;$i+=4) {
 	       $ok=0;
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
 		 $ok=1; 
 	       }
 	       if ($ok) {
@@ -332,31 +337,46 @@ class Image
 	    }
 	    if (!$ok) {
 	       imagefilledpolygon($im,$arr,$num,$col);
+	       for ($i=0,$e=count($arr);$i<$e;$i+=2) {
+		  list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
+		  if ($x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
+		     imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
+		     imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
+		  }
+	       }
+	        imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
 	    }
 	 }
       }
 
-      foreach ($points as $key=>$arr) {
-	 if (count($arr)/2 >=3) {
-	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
-	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
-	       
-	       $ok=0;
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
-		 $ok=1; 
-	       }	       
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,$arr[$i+2],$arr[$i+3])) {
-		 $ok=1; 
-	       }
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
-		 $ok=1; 
-	       }
-	       if (!$ok) {   
-		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
-	       } 
-	    }
-	 }
-      }
+//      foreach ($points as $key=>$arr) {
+//	 if (count($arr)/2 >=3) {
+//	    for ($i=0,$num=count($arr);$i<$num;$i+=4) {
+//	       imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
+//	       
+//	       $ok=0;
+//	       $n=count($this->svertx);
+//	       
+//	       list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
+//	       $dx = $x2-$x1;
+//	       $dy = $y2-$y1;
+//	       $d=$dx*$dx+$dy*$dy;
+//	    
+//	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+//		 $ok=1; 
+//	       }	       
+//	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i+2],$arr[$i+3])) {
+//		 $ok=1; 
+//	       }
+//	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+//		 $ok=1; 
+//	       }
+//	       if (!$ok || $d<$this->average) {   
+//		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
+//	       } 
+//	    }
+//	 }
+//      }
       
       for ($i=0,$end=count($this->shape);$i<$end;$i+=2) {
 	 imageline($im,$this->shape[$i][0]+$this->padding,$this->shape[$i][1]+$this->padding,
@@ -791,7 +811,10 @@ class Contourplot
       $this->svertx=$this->sverty=array(); 
       foreach($this->shape as $key => $arr)
       {
-	 list($this->svertx[],$this->sverty[])=$arr;
+	 list($x1,$y1)=$arr;
+	 $x1*=BETA;
+	 $y1*=BETA;
+	 list($this->svertx[],$this->sverty[])=array($x1,$y1);
       }
       
       if ($points==0)
