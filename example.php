@@ -9,10 +9,10 @@
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 define("ALPHA",2.3);
-define("OMEGA",1);
+define("OMEGA",10);
 define("MINRAND",40);
 define("MAXRAND",60);
-define("STEPS",5);
+define("STEPS",6);
 define("PATH","/tmp/");
 define("SHAPEFILE","PAShapeFile.txt");
 define("DATAFILE","PennsylvaniaLonLatT.txt");
@@ -33,12 +33,14 @@ $mean=$d->project($arr);
 
 $s=new mercator(MAPWIDTH,MAPHEIGHT);
 $shape=$s->loadfileZ(SHAPEFILE);
+$s->set=$s->repair($shape,$mean);
 $m=$s->project($shape,$mean);
 $filter=$s->filter($s->proj,OMEGA);
 
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ(DATAFILE);
 $arr=array_merge($arr,$filter);
+//$arr=array_merge($arr,$s->set);
 $m=$f->project($arr);
 
 $plot=new Contourplot();

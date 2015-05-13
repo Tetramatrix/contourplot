@@ -50,8 +50,8 @@ class mercator {
       $file = fopen($filename, "r");
       while (!feof($file))
       {
-          list($lon,$lat)=explode(",",rtrim(fgets($file)));
-          $arr[]="$lon,$lat"; 
+         list($lon,$lat)=explode(",",rtrim(fgets($file)));
+         $arr[]="$lon,$lat"; 
       }
       fclose($file);
       return $arr;
@@ -70,6 +70,26 @@ class mercator {
       }
       fclose($file);
       return $arr;
+   }
+   
+   function repair($arr,$mean=0) { 
+      //clockwise
+      $temp=array();
+      for($i=0,$end=count($arr)-1;$i<$end;$i++) {
+	 list($x1,$y1,$z)=explode(",",$arr[$i]);
+	 if ($mean!=0) {
+	    $temp[]=array($x1,$y1,$mean);
+	 } else {
+	    $temp[]=array($x1,$y1,$z);
+	 }
+	 list($x2,$y2,$z)=explode(",",$arr[$i+1]);
+	  if ($mean!=0) {
+	    $temp[]=array($x2,$y2,$mean);
+	 } else {
+	    $temp[]=array($x2,$y2,$z);
+	 }
+      }
+      return $temp;
    }
    
    function convert($arr) {
@@ -107,7 +127,7 @@ class mercator {
 	 }
 	 if ($ok==0)
 	 {
-	     $set[$i]="$tx,".round($y[$i]);
+	    $set[$i]="$tx,".round($y[$i]);
 	 }
       }
       $filter=array();
@@ -137,8 +157,8 @@ class mercator {
          }
       } 
 
-      $mapLonDelta =  $this->mapLonRight - $this->mapLonLeft; 
-      $mapLatDelta =  $this->mapLatTop - $this->mapLatBottom; 
+      $mapLonDelta = $this->mapLonRight-$this->mapLonLeft; 
+      $mapLatDelta = $this->mapLatTop-$this->mapLatBottom; 
 
       $mapLatTopY= $this->mapLatTop*(M_PI/180); 
       $worldMapWidth=(($this->mapWidth/$mapLonDelta)*360)/(2*M_PI); 
