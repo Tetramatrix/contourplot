@@ -17,6 +17,8 @@ class mercator {
    var $mapLatTop;
    var $set;
    var $proj;
+   var $ZMax;
+   var $ZMin;
    
    function __construct ($mapWidth=1000,$mapHeight=1000) 
    {
@@ -28,6 +30,8 @@ class mercator {
        $this->mapLatTop   =-1000; 
        $this->set=array(); 
        $this->proj=array();
+       $this->ZMax        =-1000;
+       $this->ZMin        =1000;
    }
   
    //function convertPixelToGeo(tx:Number, ty)
@@ -145,7 +149,9 @@ class mercator {
       foreach ($arr as $key => $arr2) 
       { 
          list($lon,$lat,$z) = explode(",",$arr2);
-         $sum+=$z;
+         $this->ZMin = min($this->ZMin,$z);
+	 $this->ZMax = max($this->ZMax,$z);
+	 $sum+=$z;
 	 $c++;
          $this->mapLonLeft = min($this->mapLonLeft,$lon); 
          $this->mapLonRight = max($this->mapLonRight,$lon); 

@@ -6,6 +6,9 @@
 *  All rights reserved
 *
 ***************************************************************/
+require_once("mercator.php");
+require_once("contour.php");
+
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 define("ALPHA",2.3);
@@ -17,9 +20,7 @@ define("STEPS",6);
 define("PATH","/tmp/");
 define("SHAPEFILE","PAShapeFile.txt");
 define("DATAFILE","PennsylvaniaLonLatT.txt");
-
-require_once("mercator.php");
-require_once("contour.php");
+define("INTERVAL",0.5);
 
 if( !ini_get('safe_mode') )
 {
@@ -45,7 +46,7 @@ $arr=array_merge($arr,$filter);
 $m=$f->project($arr);
 
 $plot=new Contourplot();
-$res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,$mean,ALPHA);
+$res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,$mean,$d->ZMax,$d->ZMin,ALPHA);
  
 $pic=new Image(PATH,$plot);
 $pic->create();
