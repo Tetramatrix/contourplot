@@ -20,7 +20,7 @@ define("STEPS",6);
 define("PATH","/tmp/");
 define("SHAPEFILE","PAShapeFile.txt");
 define("DATAFILE","PennsylvaniaLonLatT.txt");
-define("INTERVAL",0.5);
+define("INTERVAL",0.9);
 
 if( !ini_get('safe_mode') )
 {

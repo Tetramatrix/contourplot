@@ -206,18 +206,19 @@ class Image
 	    $d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
-	    if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
-	      $ok=1; 
-	    }	       
-	    if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
-	      $ok=1; 
-	    }
+	    //if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
+	    //  $ok=1; 
+	    //}	       
+	    //if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
+	    //  $ok=1; 
+	    //}
+	    
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
 	       $ok=1; 
             }
 	    
 	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
-	       || ($d<$this->average && abs($x1)!= SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
+	       || ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
 	    {
 	       
 	       $points[$key][]=$x1+$this->padding;
@@ -231,12 +232,12 @@ class Image
       
       //goto contour;
 
+      $ns=count($this->svertx);
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
-	 $n=count($this->svertx);
 	 if ($num>=3 && !$this->hull[$key]) {
 	    $ok=0;
-	    if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
 	      $ok=1; 
 	    }
 	    if ($ok) {
@@ -248,7 +249,7 @@ class Image
 	 $arr=array_values($arr);
 	 if ($num>=3 && $this->hull[$key]) {
 	    $ok=0;
-	    if (!$this->pnpoly($n,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
 	      $ok=1; 
 	    }
 	    if ($ok) {
@@ -261,7 +262,7 @@ class Image
 	 if ($num>=3 && !$this->hull[$key]) {
 	    for($i=0;$i<$num;$i+=4) {
 	       $ok=0;
-	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+	       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
 		  $ok=1; 
 	       }
 	       if ($ok) {
@@ -278,7 +279,7 @@ class Image
 	 if ($num>=3 && $this->hull[$key]) {
 	    for($i=0;$i<$num;$i+=4) {
 	       $ok=0;
-	       if (!$this->pnpoly($n,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+	       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
 		 $ok=1; 
 	       }
 	       if ($ok) {
@@ -308,9 +309,8 @@ class Image
 	    }
 	    $ok=0;
 	    for ($i=0,$end=count($arr);$i<$end;$i+=4) {
-	       if (!$this->pnpoly(count($this->svertx),$this->svertx,
-						      $this->sverty,
-						      ($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
+	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
+				 ($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
 		  $ok=1; 
 	       }
 	    }
@@ -322,7 +322,7 @@ class Image
 	       for ($i=0,$e=count($arr);$i<$e;$i+=2) {
 		  list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
 		  if ($x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-		     imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
+		     //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
 		     imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
 		  }
 	       }
@@ -352,21 +352,27 @@ contour:
 	       if (!empty($pts)) {
 		  list($x1,$y1)=$pts[0];
 		  list($x2,$y2)=$pts[1];
-		  $dx=$x2-$x1;
-		  $dy=$y2-$y1;
-		  $d=$dx*$dx+$dy*$dy;
 	       
 		  $ok=0;
 		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
-		    $ok=1; 
+		     $ok=1; 
 		  }	       
 		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
+		     $ok=1; 
+		  }
+		  if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x1,$y1)) {
+		     $ok=1; 
+		  }	       
+		  if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x2,$y2)) {
+		     $ok=1; 
+		  }
+		   if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
 		    $ok=1; 
 		  }
 		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-		     $ok=1; 
+		    $ok=1; 
 		  }
-		  if (!$ok) {
+		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
 		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
 		  }
 	       }
@@ -1003,7 +1009,7 @@ class Contourplot
 		     {
 			$startPt = $ty;
 			$currVal = $ty->z;
-			$slope = (($tx->y-$ty->y) / 0.01);
+			$slope = (($tx->y-$ty->y) / EPSILON);
 		     }
 		     
 		     if ($slope > 0) {
@@ -1032,8 +1038,10 @@ class Contourplot
 		      ****	SO, if your interval is not an integer, this rounding error thing may screw you up
 		      ****	my solution is lame -- make a better one
 		      *******/
-		     //if (INTERVAL is int) $currInt = round($currInt);
-		     //$currInt = ceil($currInt / INTERVAL) * INTERVAL;
+		     if (!ctype_digit(INTERVAL)) {
+			$currInt = round($currInt);
+			$currInt = ceil($currInt / INTERVAL) * INTERVAL;
+		     }
 		     
 		     while ($currInt <= $end) {
 			// will hold how far away from either $tx or $ty the next interpolated point is
@@ -1053,68 +1061,69 @@ class Contourplot
 	 }
       }	  
        
-       
-//     foreach ($this->indices as $key => $arr)
-//      {
-//         foreach ($this->indices as $ikey => $iarr)
-//         {
-//            if ($key != $ikey)
-//            {	       
-//	       if ( ($arr->x==$iarr->y && $arr->y==$iarr->x) ||
-//                    ($arr->x==$iarr->z && $arr->y==$iarr->y) ||
-//                    ($arr->x==$iarr->x && $arr->y==$iarr->z) ||
-//                                 
-//                    ($arr->y==$iarr->y && $arr->z==$iarr->x) ||
-//                    ($arr->y==$iarr->z && $arr->z==$iarr->y) ||
-//                    ($arr->y==$iarr->x && $arr->z==$iarr->z) ||
-//                    
-//                    ($arr->z==$iarr->y && $arr->x==$iarr->x) ||
-//                    ($arr->z==$iarr->z && $arr->x==$iarr->y) ||
-//                    ($arr->z==$iarr->x && $arr->x==$iarr->z) 
-//                  )
-//	       {
-//	       
-//		 list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->delaunay[$ikey]->x->x->x,
-//						     $this->delaunay[$ikey]->x->x->y,
-//						     $this->delaunay[$ikey]->x->y->x,
-//						     $this->delaunay[$ikey]->x->y->y,
-//						     $this->delaunay[$ikey]->y->y->x,
-//						     $this->delaunay[$ikey]->y->y->y
-//						     );
-//		 $points=array();
-//		 $points[]=new Point($x1,$y1);
-//		 $points[]=new Point($x2,$y2);
-//		 $points[]=new Point($x3,$y3);
-//		 
-//		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->x->x,$this->delaunay[$key]->x->x->y);
-//		 if ($tt)
-//		 {
-//		     unset($this->delaunay[$key]);
-//		     unset($this->indices[$key]);
-//		     $deleted[]=$key;
-//		     break;
-//		 }    
-//		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->y->x,$this->delaunay[$key]->x->y->y);
-//		 if ($tt)
-//		 {
-//		     unset($this->delaunay[$key]);
-//		     unset($this->indices[$key]);
-//		     $deleted[]=$key;
-//		     break;
-//		 }     
-//		 $tt=$this->insidePoly($points,$this->delaunay[$key]->y->y->x,$this->delaunay[$key]->y->y->y);
-//		 if ($tt)
-//		 {
-//		     unset($this->delaunay[$key]);
-//		     unset($this->indices[$key]);
-//		     $deleted[]=$key;
-//		     break;
-//		 }
-//	       }                 
-//	    }                    
-//	}
-//    }
-       
+      goto end;
+      
+      foreach ($this->indices as $key => $arr)
+      {
+	 foreach ($this->indices as $ikey => $iarr)
+	 {
+	    if ($key != $ikey)
+	    {	       
+	       if ( ($arr->x==$iarr->y && $arr->y==$iarr->x) ||
+		    ($arr->x==$iarr->z && $arr->y==$iarr->y) ||
+		    ($arr->x==$iarr->x && $arr->y==$iarr->z) ||
+				 
+		    ($arr->y==$iarr->y && $arr->z==$iarr->x) ||
+		    ($arr->y==$iarr->z && $arr->z==$iarr->y) ||
+		    ($arr->y==$iarr->x && $arr->z==$iarr->z) ||
+		    
+		    ($arr->z==$iarr->y && $arr->x==$iarr->x) ||
+		    ($arr->z==$iarr->z && $arr->x==$iarr->y) ||
+		    ($arr->z==$iarr->x && $arr->x==$iarr->z) 
+		  )
+	       {
+	       
+		 list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->delaunay[$ikey]->x->x->x,
+						     $this->delaunay[$ikey]->x->x->y,
+						     $this->delaunay[$ikey]->x->y->x,
+						     $this->delaunay[$ikey]->x->y->y,
+						     $this->delaunay[$ikey]->y->y->x,
+						     $this->delaunay[$ikey]->y->y->y
+						     );
+		 $points=array();
+		 $points[]=new Point($x1,$y1);
+		 $points[]=new Point($x2,$y2);
+		 $points[]=new Point($x3,$y3);
+		 
+		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->x->x,$this->delaunay[$key]->x->x->y);
+		 if ($tt)
+		 {
+		     unset($this->delaunay[$key]);
+		     unset($this->indices[$key]);
+		     $deleted[]=$key;
+		     break;
+		 }    
+		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->y->x,$this->delaunay[$key]->x->y->y);
+		 if ($tt)
+		 {
+		     unset($this->delaunay[$key]);
+		     unset($this->indices[$key]);
+		     $deleted[]=$key;
+		     break;
+		 }     
+		 $tt=$this->insidePoly($points,$this->delaunay[$key]->y->y->x,$this->delaunay[$key]->y->y->y);
+		 if ($tt)
+		 {
+		     unset($this->delaunay[$key]);
+		     unset($this->indices[$key]);
+		     $deleted[]=$key;
+		     break;
+		 }
+	       }                 
+	    }                    
+	}
+      }
+end:       
       $this->average2=$sum/$c*$this->weight;
       return $result;
    }
