@@ -339,41 +339,43 @@ contour:
       
       foreach ($this->interval as $key => $arr) {
 	 
-	 foreach ($this->indices as $ikey => $iarr)
-	 {
-	    if ($this->contour[$ikey])
+	 if ($arr>PHI) {
+	    foreach ($this->indices as $ikey => $iarr)
 	    {
-	       $pts=array();
-	       foreach ($this->contour[$ikey] as $iikey => $iiarr) {
-		  if ($iiarr[$key]) {
-		     $pts[]=array($iiarr[$key]->x,$iiarr[$key]->y);
+	       if ($this->contour[$ikey])
+	       {
+		  $pts=array();
+		  foreach ($this->contour[$ikey] as $iikey => $iiarr) {
+		     if ($iiarr[$key]) {
+			$pts[]=array($iiarr[$key]->x,$iiarr[$key]->y);
+		     }
 		  }
-	       }
-	       if (!empty($pts)) {
-		  list($x1,$y1)=$pts[0];
-		  list($x2,$y2)=$pts[1];
-	       
-		  $ok=0;
-		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
-		     $ok=1; 
-		  }	       
-		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
-		     $ok=1; 
-		  }
-		  if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x1,$y1)) {
-		     $ok=1; 
-		  }	       
-		  if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x2,$y2)) {
-		     $ok=1; 
-		  }
-		   if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
-		    $ok=1; 
-		  }
-		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-		    $ok=1; 
-		  }
-		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+		  if (!empty($pts)) {
+		     list($x1,$y1)=$pts[0];
+		     list($x2,$y2)=$pts[1];
+		  
+		     $ok=0;
+		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
+			$ok=1; 
+		     }	       
+		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
+			$ok=1; 
+		     }
+		     if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x1,$y1)) {
+			$ok=1; 
+		     }	       
+		     if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x2,$y2)) {
+			$ok=1; 
+		     }
+		      if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		       $ok=1; 
+		     }
+		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		       $ok=1; 
+		     }
+		     if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
+			imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+		     }
 		  }
 	       }
 	    }
@@ -889,10 +891,12 @@ class Contourplot
 	    $c+=count($arr);   
 	 }
       }
-      $this->average=$sum/$c*$this->weight;
       
+      $this->average=$sum/$c*$this->weight;
       $n=count($this->points);
+      $nn=count($this->nvertx);
       $sum=$c=0;
+      
       foreach ($this->indices as $key => $arr)
       {
          foreach ($this->indices as $ikey => $iarr)
@@ -922,13 +926,13 @@ class Contourplot
 						         $this->points[$arr->z]->x,$this->points[$arr->z]->y,
 						       );		     
 		     $ok=0;
-		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x1,$y1)) {
+		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
 		       $ok=1; 
 		     }	       
-		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x2,$y2)) {
+		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
 		       $ok=1; 
 		     }
-		     if (!$this->pnpoly(count($this->nvertx),$this->nvertx,$this->nverty,$x3,$y3)) {
+		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x3,$y3)) {
 		       $ok=1; 
 		     }
 		     foreach ($this->dist[$key] as $iikey => $iiarr)
