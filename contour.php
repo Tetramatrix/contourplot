@@ -1003,36 +1003,54 @@ class Contourplot
 		     {
 			$startPt = $tx;
 			$currVal = $tx->z;
+			//$end = $ty->z;
 			$slope = (($ty->y-$tx->y) / ($ty->x-$tx->x));
+			
 		     } else if (($tx->x-$ty->x)>0)
 		     {
 			$startPt = $ty;
 			$currVal = $ty->z;
+			//$end = $tx->z;
 			$slope = (($tx->y-$ty->y) / ($tx->x-$ty->x));
 		     }  else 
 		     {
-			$startPt = $ty;
-			$currVal = $ty->z;
-			$slope = (($tx->y-$ty->y) / EPSILON);
+			$startPt = $tx;
+			$currVal = $tx->z;
+			//$end = $ty->z;
+			$slope = (($ty->y-$tx->y) / EPSILON);
+			
+			//$startPt = $ty;
+			//$currVal = $ty->z;
+			//$slope = (($tx->y-$ty->y) / EPSILON);
 		     }
 		     
-		     if ($slope > 0) {
-			$angle = asin($slope/(sqrt($slope*$slope+1))); // the angle of A
-			$ymulti = -1;
-		     } else if ($slope<0)
+		     if ($slope>0)
 		     {
-			$angle = (2*M_PI)-asin($slope/(sqrt($slope*$slope+1))); // the angle of A
-			$ymulti = 1;
+			$angle=asin($slope/(sqrt($slope*$slope+1))); // the angle of A
+			$ymulti=-1;
+		     } else 
+		     {
+			$angle=(2*M_PI)-asin($slope/(sqrt($slope*$slope+1))); // the angle of A
+			$ymulti=1;
 		     }
 
 		     // stores the total line length of the edge (the hypotenuse, then)
-		     $dx=$ty->x-$tx->x;
-		     $dy=$ty->y-$tx->y;
-		     $lineLength=sqrt($dx*$dx+$dy*$dy);
-		      
+		     if ( ($ty->x > $tx->x) || (($tx->x-$ty->x)>0))
+		     {
+			$dx=$ty->x-$tx->x;
+			$dy=$ty->y-$tx->y;
+			$lineLength=sqrt($dx*$dx+$dy*$dy);
+		     } else {
+			$dx=EPSILON;
+			$dy=$ty->y-$tx->y;
+			$lineLength=sqrt($dx*$dx+$dy*$dy);
+		     }
+		     
 		     //now let's get ridiculous
 		     $curr = ($tx->z < $ty->z) ? $tx->z : $ty->z; //curr is the current value (starts as the lower of the two line node values)
 		     $end = ($ty->z > $tx->z) ? $ty->z : $tx->z; //end is the end value
+		     //$end+=0.05;
+		     
 		     //now find the first interpolated point on the edge segment
 		     $currInt = $curr+(INTERVAL-((($curr/INTERVAL)-floor($curr/INTERVAL))*INTERVAL));
 		     
@@ -1049,9 +1067,9 @@ class Contourplot
 		     
 		     while ($currInt <= $end) {
 			// will hold how far away from either $tx or $ty the next interpolated point is
-			$dist = (abs($currInt-$currVal) / abs($tx->z-$ty->z)) * $lineLength;
-			$cx = $startPt->x + ($dist * cos($angle));
-			$cy = $startPt->y - ($dist * sin($angle)) * $ymulti;
+			$dist=(abs($currInt-$currVal)/abs($tx->z-$ty->z))*$lineLength;
+			$cx = $startPt->x+($dist*cos($angle));
+			$cy = $startPt->y-($dist*sin($angle))*$ymulti;
 			//create the new Interpolated Point object
 			//and add the thing to the edge's array
 			$this->contour[$key][$ikey][$currInt] = new Point($cx,$cy);
