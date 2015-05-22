@@ -989,7 +989,9 @@ class Contourplot
 		     
 		     list($tx,$ty)=array($this->points[$keys[0]],
 				         $this->points[$keys[1]]);
-			     
+			
+		     //goto isoline2;
+		     
 		     /*** 
 		      *  returns an array of the coordinates and value (an XYZ object) of any found interval values
 		      *  uses strict linear interpolation
@@ -997,6 +999,14 @@ class Contourplot
 		      *  @date June 2008
 		      *  http://indiemaps.com/blog/2008/06/isolining-package-for-actionscript-3/
 		      ***/
+		     
+		     if (($tx->x-$ty->x)==0) {
+			if ($tx->y > $ty->y) {
+			   $temp=$tx;
+			   $tx=$ty;
+			   $ty=$temp;
+			}
+		     }
 		     
 	    	     // first, determine which has the greater 'x' of p1 and p2 (b/c this changes how we calculate slope)
 		     if ($ty->x > $tx->x)
@@ -1077,6 +1087,21 @@ class Contourplot
 			//then get next interval value from current position
 			$currInt += INTERVAL;
 		     }
+		     goto isolineEnd;
+isoline2:
+		     $intervalValue = ceil($this->ZMin/INTERVAL)*INTERVAL;
+	 
+		     while ($intervalValue <= $this->ZMax )
+		     {
+			// find the interpolated point along the first edge
+			$cx = (($intervalValue-$tx->z) / ($ty->z-$tx->z)) * ($ty->x-$tx->x) + $tx->x;
+			$cy = (($intervalValue-$tx->z) / ($ty->z-$tx->z)) * ($ty->y-$tx->y) + $tx->y;
+			
+			$this->contour[$key][$ikey][$currInt] = new Point($cx,$cy);
+			$this->interval[$currInt]++;
+			$intervalValue += INTERVAL;
+		     }
+isolineEnd:
 		  }
 	       }
 	    }
