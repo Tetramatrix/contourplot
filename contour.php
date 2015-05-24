@@ -1013,25 +1013,18 @@ class Contourplot
 		     {
 			$startPt = $tx;
 			$currVal = $tx->z;
-			//$end = $ty->z;
 			$slope = (($ty->y-$tx->y) / ($ty->x-$tx->x));
 			
 		     } else if (($tx->x-$ty->x)>0)
 		     {
 			$startPt = $ty;
 			$currVal = $ty->z;
-			//$end = $tx->z;
 			$slope = (($tx->y-$ty->y) / ($tx->x-$ty->x));
 		     }  else 
 		     {
 			$startPt = $tx;
 			$currVal = $tx->z;
-			//$end = $ty->z;
 			$slope = (($ty->y-$tx->y) / EPSILON);
-			
-			//$startPt = $ty;
-			//$currVal = $ty->z;
-			//$slope = (($tx->y-$ty->y) / EPSILON);
 		     }
 		     
 		     if ($slope>0)
@@ -1059,10 +1052,14 @@ class Contourplot
 		     //now let's get ridiculous
 		     $curr = ($tx->z < $ty->z) ? $tx->z : $ty->z; //curr is the current value (starts as the lower of the two line node values)
 		     $end = ($ty->z > $tx->z) ? $ty->z : $tx->z; //end is the end value
-		     //$end+=0.05;
 		     
 		     //now find the first interpolated point on the edge segment
 		     $currInt = $curr+(INTERVAL-((($curr/INTERVAL)-floor($curr/INTERVAL))*INTERVAL));
+	
+		     if (($tx->z-$currInt)*($ty->z-$currInt)==0) {
+			$tx->z+=EPSILON;
+			$ty->z+=EPSILON;
+		     }
 		     
 		     /*******
 		      ****	lame Flash rounding errors (54.99999999999 instead of 55) are screwing this part up
@@ -1070,12 +1067,12 @@ class Contourplot
 		      ****	SO, if your interval is not an integer, this rounding error thing may screw you up
 		      ****	my solution is lame -- make a better one
 		      *******/
-		     if (!ctype_digit(INTERVAL)) {
-			$currInt = round($currInt);
-			$currInt = ceil($currInt / INTERVAL) * INTERVAL;
-		     }
+		     //if (!ctype_digit(INTERVAL)) {
+		     //	$currInt = round($currInt);
+		     //	$currInt = ceil($currInt / INTERVAL) * INTERVAL;
+		     //}
 		     
-		     while ($currInt <= $end) {
+		     while ($currInt <= $end && ($tx->z-$currInt)*($ty->z-$currInt)<=0) {
 			// will hold how far away from either $tx or $ty the next interpolated point is
 			$dist=(abs($currInt-$currVal)/abs($tx->z-$ty->z))*$lineLength;
 			$cx = $startPt->x+($dist*cos($angle));
@@ -1130,45 +1127,45 @@ isolineEnd:
 		  )
 	       {
 	       
-		 list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->delaunay[$ikey]->x->x->x,
-						     $this->delaunay[$ikey]->x->x->y,
-						     $this->delaunay[$ikey]->x->y->x,
-						     $this->delaunay[$ikey]->x->y->y,
-						     $this->delaunay[$ikey]->y->y->x,
-						     $this->delaunay[$ikey]->y->y->y
-						     );
-		 $points=array();
-		 $points[]=new Point($x1,$y1);
-		 $points[]=new Point($x2,$y2);
-		 $points[]=new Point($x3,$y3);
-		 
-		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->x->x,$this->delaunay[$key]->x->x->y);
-		 if ($tt)
-		 {
+		  list($x1,$y1,$x2,$y2,$x3,$y3)=array($this->delaunay[$ikey]->x->x->x,
+						      $this->delaunay[$ikey]->x->x->y,
+						      $this->delaunay[$ikey]->x->y->x,
+						      $this->delaunay[$ikey]->x->y->y,
+						      $this->delaunay[$ikey]->y->y->x,
+						      $this->delaunay[$ikey]->y->y->y
+						      );
+		  $points=array();
+		  $points[]=new Point($x1,$y1);
+		  $points[]=new Point($x2,$y2);
+		  $points[]=new Point($x3,$y3);
+		  
+		  $tt=$this->insidePoly($points,$this->delaunay[$key]->x->x->x,$this->delaunay[$key]->x->x->y);
+		  if ($tt)
+		  {
 		     unset($this->delaunay[$key]);
 		     unset($this->indices[$key]);
 		     $deleted[]=$key;
 		     break;
-		 }    
-		 $tt=$this->insidePoly($points,$this->delaunay[$key]->x->y->x,$this->delaunay[$key]->x->y->y);
-		 if ($tt)
-		 {
+		  }    
+		  $tt=$this->insidePoly($points,$this->delaunay[$key]->x->y->x,$this->delaunay[$key]->x->y->y);
+		  if ($tt)
+		  {
 		     unset($this->delaunay[$key]);
 		     unset($this->indices[$key]);
 		     $deleted[]=$key;
 		     break;
-		 }     
-		 $tt=$this->insidePoly($points,$this->delaunay[$key]->y->y->x,$this->delaunay[$key]->y->y->y);
-		 if ($tt)
-		 {
+		  }     
+		  $tt=$this->insidePoly($points,$this->delaunay[$key]->y->y->x,$this->delaunay[$key]->y->y->y);
+		  if ($tt)
+		  {
 		     unset($this->delaunay[$key]);
 		     unset($this->indices[$key]);
 		     $deleted[]=$key;
 		     break;
-		 }
+		  }
 	       }                 
 	    }                    
-	}
+	 }
       }
 end:       
       $this->average2=$sum/$c*$this->weight;
