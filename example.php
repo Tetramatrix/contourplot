@@ -21,7 +21,6 @@ define("PATH","/tmp/");
 define("SHAPEFILE","PAShapeFile.txt");
 define("DATAFILE","PennsylvaniaLonLatT.txt");
 define("INTERVAL",0.9);
-define("PHI",10);
 
 if( !ini_get('safe_mode') )
 {

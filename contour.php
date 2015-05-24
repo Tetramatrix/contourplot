@@ -344,43 +344,41 @@ contour:
       
       foreach ($this->interval as $key => $arr) {
 	 
-	 if ($arr>PHI) {
-	    foreach ($this->indices as $ikey => $iarr)
+	 foreach ($this->indices as $ikey => $iarr)
+	 {
+	    if ($this->contour[$ikey])
 	    {
-	       if ($this->contour[$ikey])
-	       {
-		  $pts=array();
-		  foreach ($this->contour[$ikey] as $iikey => $iiarr) {
-		     if ($iiarr[$key]) {
-			$pts[]=array($iiarr[$key]->x,$iiarr[$key]->y);
-		     }
+	       $pts=array();
+	       foreach ($this->contour[$ikey] as $iikey => $iiarr) {
+		  if ($iiarr[$key]) {
+		     $pts[]=array($iiarr[$key]->x,$iiarr[$key]->y);
 		  }
-		  if (!empty($pts)) {
-		     list($x1,$y1)=$pts[0];
-		     list($x2,$y2)=$pts[1];
-		  
-		     $ok=0;
-		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
-			$ok=1; 
-		     }	       
-		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
-			$ok=1; 
-		     }
-		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
-			$ok=1; 
-		     }	       
-		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
-			$ok=1; 
-		     }
-		      if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
-		       $ok=1; 
-		     }
-		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-		       $ok=1; 
-		     }
-		     if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-			imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
-		     }
+	       }
+	       if (!empty($pts)) {
+		  list($x1,$y1)=$pts[0];
+		  list($x2,$y2)=$pts[1];
+	       
+		  $ok=0;
+		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
+		     $ok=1; 
+		  }	       
+		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
+		     $ok=1; 
+		  }
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
+		     $ok=1; 
+		  }	       
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
+		     $ok=1; 
+		  }
+		   if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		    $ok=1; 
+		  }
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		    $ok=1; 
+		  }
+		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
+		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
 		  }
 	       }
 	    }
@@ -1090,12 +1088,14 @@ class Contourplot
 			$cy = $startPt->y-($dist*sin($angle))*$ymulti;
 			//create the new Interpolated Point object
 			//and add the thing to the edge's array
-			$this->contour[$key][$ikey][$currInt] = new Point($cx,$cy);
-			$this->interval[$currInt]++;
+			//$index=substr(md5($currInt),0,10);
+			$this->contour[$key][$ikey][(string)$currInt] = new Point($cx,$cy);
+			$this->interval[(string)$currInt]++;
 			//then get next interval value from current position
 			$currInt += INTERVAL;
 		     }
 		     goto isolineEnd;
+		     
 isoline2:
 		     $intervalValue = ceil($this->ZMin/INTERVAL)*INTERVAL;
 	 
