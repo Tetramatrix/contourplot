@@ -212,7 +212,12 @@ class Image
 	    //if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
 	    //  $ok=1; 
 	    //}
-	    
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
+	      $ok=1; 
+	    }	       
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
+	      $ok=1; 
+	    }
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
 	       $ok=1; 
             }
@@ -361,10 +366,10 @@ contour:
 		     if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
 			$ok=1; 
 		     }
-		     if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x1,$y1)) {
+		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
 			$ok=1; 
 		     }	       
-		     if (!$this->pnpoly($ns,$this->nvertx,$this->nverty,$x2,$y2)) {
+		     if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
 			$ok=1; 
 		     }
 		      if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
@@ -443,7 +448,9 @@ contour:
    	    }
    	 }
       }
-
+      
+      goto ImageEnd;
+      
 shape:
 
       for ($i=0,$end=count($this->shape);$i<$end;$i+=2) {
@@ -451,7 +458,9 @@ shape:
 		   $this->shape[$i+1][0]+$this->padding,$this->shape[$i+1][1]+$this->padding,
 		   $black);
       }
-      
+
+ImageEnd:
+
       flush();
       ob_start();
       imagepng($im);
@@ -843,6 +852,7 @@ class Contourplot
       } 
       array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->data);
       
+      //pnpoly datapoints
       $this->nvertx=$this->nverty=array(); 
       foreach($this->data as $key => $arr)
       {
@@ -850,6 +860,7 @@ class Contourplot
 	 list($this->nvertx[],$this->nverty[])=array($x1,$y1);
       }
       
+      //pnpoly shape
       $this->svertx=$this->sverty=array(); 
       foreach($this->shape as $key => $arr)
       {
