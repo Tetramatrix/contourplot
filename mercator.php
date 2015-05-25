@@ -24,14 +24,14 @@ class mercator {
    {
        $this->mapWidth    = $mapWidth; 
        $this->mapHeight   = $mapHeight; 
-       $this->mapLonLeft  = 1000; 
-       $this->mapLatBottom= 1000; 
-       $this->mapLonRight =-1000; 
-       $this->mapLatTop   =-1000; 
+       $this->mapLonLeft  = 5000; 
+       $this->mapLatBottom= 5000; 
+       $this->mapLonRight =-5000; 
+       $this->mapLatTop   =-5000; 
        $this->set=array(); 
        $this->proj=array();
-       $this->ZMax        =-1000;
-       $this->ZMin        =1000;
+       $this->ZMax        =-5000;
+       $this->ZMin        =5000;
    }
   
    //function convertPixelToGeo(tx:Number, ty)
@@ -48,6 +48,32 @@ class mercator {
    //   $long = $this->mapLonLeft+$tx/$mapWidth*$mapLonDelta;
    //   return new Point($lat,$long);
    //}
+
+   function resize($pts) {
+      $mapXLeft=180;
+      $mapXRight=-180;
+      $mapYBottom=180;
+      $mapYTop=-180;
+      
+      foreach ($pts as $key=>$arr) {
+	 list($lon,$lat,$z)=explode(",",$arr);
+	 $mapXLeft=min($mapXLeft,$lon); 
+	 $mapXRight=max($mapXRight,$lon); 
+	 $mapYBottom=min($mapYBottom,$lat); 
+	 $mapYTop=max($mapYTop,$lat); 
+      }
+      
+      $lonC=($mapXLeft+$mapXRight)/2;
+      $latC=($mapYBottom+$mapYTop)/2;
+      
+      foreach ($pts as $key=>$arr) {
+	 list($lon,$lat,$z)=explode(",",$arr);
+	 $lon=BETA*($lon-$lonC)+$lonC;
+	 $lat=BETA*($lat-$latC)+$latC;
+	 $pts[$key]="$lon,$lat,$z";
+      }
+      return $pts;
+   }
 
    function loadfile($filename) {
       $arr=array();
@@ -143,8 +169,16 @@ class mercator {
       return $filter;
    }
    
-   function project($arr,$mean=0,$beta=1) 
+   function project($arr,$mean=0) 
    {
+      $this->mapLonLeft  = 5000; 
+      $this->mapLatBottom= 5000; 
+      $this->mapLonRight =-5000; 
+      $this->mapLatTop   =-5000; 
+      $this->proj=array();
+      $this->ZMax        =-5000;
+      $this->ZMin        =5000;
+       
       $sum=$c=0;
       foreach ($arr as $key => $arr2) 
       { 
@@ -185,9 +219,6 @@ class mercator {
          $tx = ($lon-$this->mapLonLeft)*($newWidth/$mapLonDelta)*$mapRatioW; 
          $f = sin($lat*M_PI/180); 
          $ty = ($mapHeightD-(($worldMapWidth/2 * log((1+$f)/(1-$f)))-$mapOffsetY)); 
-         
-	 $tx*=$beta;
-	 $ty*=$beta;
 	 
          if ($mean!=0) {
             $this->proj[]=array($tx,$ty,$mean);

@@ -12,7 +12,8 @@ require_once("contour.php");
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 define("ALPHA",2.3);
-define("BETA",1);
+define("BETA",1.2);
+define("PHI",0.8);
 define("OMEGA",10);
 define("MINRAND",40);
 define("MAXRAND",60);
@@ -38,11 +39,16 @@ $shape=$s->loadfileZ(SHAPEFILE);
 $s->set=$s->repair($shape,$mean);
 $m=$s->project($shape,$mean);
 $filter=$s->filter($s->proj,OMEGA);
+//$filter=$s->resize($filter,BETA);
+//
+//$s=new mercator(MAPWIDTH*PHI,MAPHEIGHT*PHI);
+//$shape=$s->loadfileZ(SHAPEFILE);
+//$s->set=$s->repair($shape,$mean);
+//$m=$s->project($shape,$mean);
 
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ(DATAFILE);
 $arr=array_merge($arr,$filter);
-//$arr=array_merge($arr,$s->set);
 $m=$f->project($arr);
 
 $plot=new Contourplot();

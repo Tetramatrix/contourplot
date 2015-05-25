@@ -932,18 +932,14 @@ class Contourplot
       $this->nvertx=$this->nverty=array(); 
       foreach($this->data as $key => $arr)
       {
-	 list($x1,$y1)=$arr;
-	 list($this->nvertx[],$this->nverty[])=array($x1,$y1);
+	 list($this->nvertx[],$this->nverty[])=$arr;
       }
       
       //pnpoly shape
       $this->svertx=$this->sverty=array(); 
       foreach($this->shape as $key => $arr)
       {
-	 list($x1,$y1)=$arr;
-	 $x1*=BETA;
-	 $y1*=BETA;
-	 list($this->svertx[],$this->sverty[])=array($x1,$y1);
+	 list($this->svertx[],$this->sverty[])=$arr;
       }
       
       if ($points==0)
