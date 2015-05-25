@@ -131,6 +131,7 @@ class Image
       $this->indices=$pObj->indices;
       $this->contour=$pObj->contour;
       $this->interval=$pObj->interval;
+      $this->mean=$pObj->mean;
    }
    
    function erropen()
@@ -172,7 +173,7 @@ class Image
    
    function create()
    {
-         // Generate the image variables
+      // Generate the image variables
       $im = imagecreatetruecolor($this->stageWidth+200,$this->stageHeight+200);
       $white = imagecolorallocate ($im,0xff,0xff,0xff);
       $black = imagecolorallocate($im,0x00,0x00,0x00);
@@ -188,10 +189,16 @@ class Image
       // Fill in the background of the image
       imagefilledrectangle($im, 0, 0, $this->stageWidth+200, $this->stageHeight+200, $white);
 
-//      for ($i=0,$end=count($this->nvertx);$i<$end;$i+=1) {
-//	 imagefilledellipse($im,$this->nvertx[$i]+$this->padding,$this->nverty[$i]+$this->padding, 4, 4, $black);
-//      }
+      goto triangle;
+      
+      for ($i=0,$end=count($this->nvertx);$i<$end;$i+=1) {
+	 imagefilledellipse($im,$this->nvertx[$i]+$this->padding,$this->nverty[$i]+$this->padding, 4, 4, $black);
+      }
 
+triangle:
+
+      //goto contour;
+      
       $nn=count($this->nvertx);
       $ns=count($this->svertx);
 
@@ -234,8 +241,6 @@ class Image
 	    }
 	 }
       }
-      
-      //goto contour;
 
       $ns=count($this->svertx);
       foreach ($points as $key=>$arr) {
@@ -307,8 +312,7 @@ class Image
 	    if ($averageX>$averageZ) {
 	       $delta=min(($averageX-$averageZ)*(255/STEPS),255);
 	       $col=imagecolorallocate ($im,$delta,$delta,255);
-	    }
-	    else {
+	    } else {
 	       $delta=min(($averageZ-$averageX)*(255/STEPS),255);
 	       $col=imagecolorallocate ($im,255,$delta,$delta);
 	    }
@@ -322,7 +326,7 @@ class Image
 	    if (!$ok) {
 	       imagefilledpolygon($im,$arr,$num,$col);
 	       
-	       goto triangle;
+	       goto triangleEnd;
 
 	       for ($i=0,$e=count($arr);$i<$e;$i+=2) {
 		  list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
@@ -332,13 +336,16 @@ class Image
 		  }
 	       }
 	       imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
-triangle:	       
+triangleEnd:
+
 	    }
 	 }
       }
 
 contour:
 
+      //goto contour2;
+      
       $ns=count($this->svertx);
       $nn=count($this->nvertx);
       
@@ -357,6 +364,58 @@ contour:
 	       if (!empty($pts)) {
 		  list($x1,$y1)=$pts[0];
 		  list($x2,$y2)=$pts[1];
+	       
+		  
+		//  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)
+		//       && !$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
+		//	imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);   
+		//  }
+		  
+		  $ok=0;
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
+		     $ok=1; 
+		  }	       
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
+		     $ok=1; 
+		  }
+		  // if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		  //  $ok=1; 
+		  //}
+		  if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+		    $ok=1; 
+		  }
+		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
+		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+		  }
+	       }
+	    }
+	 }
+      }
+
+      //goto alphashape;
+      goto shape;
+      
+contour2:
+
+      $ns=count($this->svertx);
+      $nn=count($this->nvertx);
+      $pts=array();
+      
+      foreach ($this->interval as $key => $arr) {
+	 
+	 foreach ($this->indices as $ikey => $iarr)
+	 {
+	    if ($this->contour[$ikey])
+	    {
+	       $temp=array();
+	       foreach ($this->contour[$ikey] as $iikey => $iiarr) {
+		  if ($iiarr[$key]) {
+		     $temp[]=array($iiarr[$key]->x,$iiarr[$key]->y);
+		  }
+	       }
+	       if (!empty($temp)) {
+		  list($x1,$y1)=$temp[0];
+		  list($x2,$y2)=$temp[1];
 	       
 		  $ok=0;
 		  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
@@ -378,14 +437,33 @@ contour:
 		    $ok=1; 
 		  }
 		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+		     $pts[$key][]=$x1;
+		     $pts[$key][]=$y1;
+		     $pts[$key][]=$x2;
+		     $pts[$key][]=$y2;
 		  }
 	       }
 	    }
 	 }
-      }   
+      }
+      
+      foreach ($pts as $key=>$arr) {
+	 if ($key>$this->mean) {
+	    $delta=min(($key-$this->mean)*(255/STEPS),255);
+	    $col=imagecolorallocate ($im,$delta,$delta,255);
+	 } else {
+	    $delta=min(($this->mean-$key)*(255/STEPS),255);
+	    $col=imagecolorallocate ($im,255,$delta,$delta);
+	 }
+	 if (($num=count($arr)/2)>=6) {
+	    imagefilledpolygon($im,$arr,$num,$col);
+	 }
+      }
+      
       goto shape;
       
+alphashape:
+
       $ns=count($this->svertx);
       foreach ($points as $key=>$arr) {
    	 if (count($arr)/2 >=3) {
@@ -427,7 +505,7 @@ contour:
    	    {
    	       $v[$x1.$y1]++;
    	       $v[$x2.$y2]++;
-   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$grey_dark); 	       
+   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black); 	       
    	    }
    	    if ($d<$this->average2 && abs($x1)==SUPER_TRIANGLE || abs($y1)==SUPER_TRIANGLE || abs($x2)==SUPER_TRIANGLE || abs($y2)==SUPER_TRIANGLE)
    	    {
@@ -442,7 +520,7 @@ contour:
    	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
    	    if (($v[$x1.$y1]<2 ||$v[$x2.$y2]<2) && (abs($x1)!=SUPER_TRIANGLE &&
    		  abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)) {
-   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$grey_dark);
+   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
    	    }
    	 }
       }
