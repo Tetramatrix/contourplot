@@ -319,7 +319,6 @@ contour:
 		  list($x1,$y1)=$pts[0];
 		  list($x2,$y2)=$pts[1];
 	       
-		  
 		//  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)
 		//       && !$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
 		//	imageline($im,$x1+$this->pad,$y1+$this->pad,$x2+$this->pad,$y2+$this->pad,$black);   
