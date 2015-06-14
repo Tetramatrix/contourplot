@@ -207,17 +207,17 @@ class mercator {
 	 $this->ZMax=max($this->ZMax,$z);
 	 $sum+=$z;
 	 $c++;
-         $this->mapLonLeft = min($this->mapLonLeft,$lon); 
-         $this->mapLonRight = max($this->mapLonRight,$lon); 
-         $this->mapLatBottom = min( $this->mapLatBottom,$lat); 
-         $this->mapLatTop = max($this->mapLatTop,$lat); 
+         $this->mapLonLeft=min($this->mapLonLeft,$lon); 
+         $this->mapLonRight=max($this->mapLonRight,$lon); 
+         $this->mapLatBottom=min( $this->mapLatBottom,$lat); 
+         $this->mapLatTop=max($this->mapLatTop,$lat); 
 	 if ($mean==0) {
             $this->set[]=array($lon,$lat,$z);
          }
       } 
 
-      $mapLonDelta = $this->mapLonRight-$this->mapLonLeft; 
-      $mapLatDelta = $this->mapLatTop-$this->mapLatBottom; 
+      $mapLonDelta=$this->mapLonRight-$this->mapLonLeft; 
+      $mapLatDelta=$this->mapLatTop-$this->mapLatBottom; 
 
       $mapLatTopY= $this->mapLatTop*(M_PI/180); 
       $worldMapWidth=(($this->mapWidth/$mapLonDelta)*360)/(2*M_PI); 

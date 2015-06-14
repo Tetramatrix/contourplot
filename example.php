@@ -13,8 +13,6 @@ define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 //Alphashape 
 define("ALPHA",12.5);
-//define("BETA",1.2);
-//define("PHI",0.8);
 //shapefile filter
 define("OMEGA",20);
 //Experimental shapefile z-value
@@ -26,10 +24,10 @@ define("STEPS",6);
 define("INTERVAL",0.9);
 //define("SHAPEFILE","PAShapeFile.txt");
 //define("DATAFILE","PennsylvaniaLonLatT.txt");
-//define("SHAPEFILE","txshape.txt");
-//define("DATAFILE","txlonlat.txt");
-define("SHAPEFILE","cashape.txt");
-define("DATAFILE","calonlat.txt");
+define("SHAPEFILE","txshape.txt");
+define("DATAFILE","txlonlat.txt");
+//define("SHAPEFILE","cashape.txt");
+//define("DATAFILE","calonlat.txt");
 //define("SHAPEFILE","flshape.txt");
 //define("DATAFILE","fllonlat.txt");
 //Image path output folder
@@ -51,12 +49,6 @@ $shape=$s->loadfileZ(SHAPEFILE);
 $s->set=$s->repair($shape,$mean);
 $m=$s->project($shape,$mean);
 $filter=$s->filter($s->proj,OMEGA);
-//$filter=$s->resize($filter,BETA);
-//
-//$s=new mercator(MAPWIDTH*PHI,MAPHEIGHT*PHI);
-//$shape=$s->loadfileZ(SHAPEFILE);
-//$s->set=$s->repair($shape,$mean);
-//$m=$s->project($shape,$mean);
 
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ(DATAFILE);

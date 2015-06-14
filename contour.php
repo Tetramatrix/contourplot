@@ -271,6 +271,12 @@ triangle:
 	       //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
 	       //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
 	       //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
+	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i]-$this->pad,$arr[$i+1]-$this->pad)) {
+	//	  $ok=1; 
+	//       }	       
+	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i+2]-$this->pad,$arr[$i+3]-$this->pad)) {
+	//	 $ok=1; 
+	//       }
 	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
 				 ($arr[$i]+$arr[$i+2]-$this->pad*2)/2,($arr[$i+1]+$arr[$i+3]-$this->pad*2)/2)) {
 		  $ok=1; 
