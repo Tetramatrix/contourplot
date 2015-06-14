@@ -110,14 +110,14 @@ class db
 
 class Image
 {
-   var $path, $stageWidth, $stageHeight, $padding, $delaunay, $average, $shape, $hull, $nvertx, $nverty, $points, $indices, $contour,$interval;
+   var $path, $stageWidth, $stageHeight, $pad, $delaunay, $average, $shape, $hull, $nvertx, $nverty, $points, $indices, $contour,$interval;
    
    function __construct($path,$pObj)
    {
       $this->path=$path;
       $this->stageWidth=$pObj->stageWidth;
       $this->stageHeight=$pObj->stageHeight;
-      $this->padding=20;
+      $this->pad=20;
       $this->delaunay=$pObj->delaunay;
       $this->average=$pObj->average;
       $this->average2=$pObj->average2;
@@ -207,7 +207,7 @@ class Image
       goto triangle;
       
       for ($i=0,$end=count($this->nvertx);$i<$end;$i+=1) {
-	 imagefilledellipse($im,$this->nvertx[$i]+$this->padding,$this->nverty[$i]+$this->padding, 4, 4, $black);
+	 imagefilledellipse($im,$this->nvertx[$i]+$this->pad,$this->nverty[$i]+$this->pad, 4, 4, $black);
       }
 
 triangle:
@@ -228,31 +228,23 @@ triangle:
 	    $d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
-	    //if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)) {
-	    //  $ok=1; 
-	    //}	       
-	    //if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
-	    //  $ok=1; 
-	    //}
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x1,$y1)) {
 	      $ok=1; 
 	    }	       
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
 	      $ok=1; 
 	    }
-//	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-//	       $ok=1; 
-//            }
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+	       $ok=1; 
+            }
 	    
 	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
 	       || ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
 	    {
-	    //if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
-	    //{
-	       $points[$key][]=$x1+$this->padding;
-	       $points[$key][]=$y1+$this->padding;
-	       $points[$key][]=$x2+$this->padding;
-	       $points[$key][]=$y2+$this->padding;
+	       $points[$key][]=$x1+$this->pad;
+	       $points[$key][]=$y1+$this->pad;
+	       $points[$key][]=$x2+$this->pad;
+	       $points[$key][]=$y2+$this->pad;
 	       $subject[$key][$ikey]=$this->indices[$key]->$ikey;
 	    }
 	 }
@@ -261,66 +253,8 @@ triangle:
       $ns=count($this->svertx);
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
-	 if ($num>=3 && !$this->hull[$key]) {
-	    $ok=0;
-	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
-	      $ok=1; 
-	    }
-	    if ($ok) {
-	       unset($arr[$i]);
-	       unset($arr[$i+1]);
-	       --$num;
-	    }
-	 }
-	 $arr=array_values($arr);
-	 if ($num>=3 && $this->hull[$key]) {
-	    $ok=0;
-	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i],$arr[$i+1])) {
-	      $ok=1; 
-	    }
-	    if ($ok) {
-	       unset($arr[$i]);
-	       unset($arr[$i+1]);
-	       --$num;
-	    }
-	 }
-	// $arr=array_values($arr);
-	// if ($num>=3 && !$this->hull[$key]) {
-	//    for($i=0;$i<$num;$i+=4) {
-	//       $ok=0;
-	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
-	//	  $ok=1; 
-	//       }
-	//       if ($ok) {
-	//	  unset($arr[$i]);
-	//	  unset($arr[$i+1]);
-	//	  unset($arr[$i+2]);
-	//	  unset($arr[$i+3]);
-	//	  --$num;
-	//	  --$num;
-	//       }
-	//    }
-	// }
-	// $arr=array_values($arr);
-	// if ($num>=3 && $this->hull[$key]) {
-	//    for($i=0;$i<$num;$i+=4) {
-	//       $ok=0;
-	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
-	//	 $ok=1; 
-	//       }
-	//       if ($ok) {
-	//	  unset($arr[$i]);
-	//	  unset($arr[$i+1]);
-	//	  unset($arr[$i+2]);
-	//	  unset($arr[$i+3]);
-	//	  --$num;
-	//	  --$num;
-	//       }
-	//    }
-	// }
-	 $arr=array_values($arr);
-	 $num=count($arr)/2;
-	 if ($num>=3 && !$this->hull[$key]) {
+
+	 if ($num>=3) {
 	    $arr=array_values($arr);
 	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
 	    $averageZ=($this->points[$subject[$key]["x"]]->z+$this->points[$subject[$key]["y"]]->z+$this->points[$subject[$key]["z"]]->z)/3;
@@ -338,10 +272,11 @@ triangle:
 	       //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
 	       //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
 	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
-				 ($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
+				 ($arr[$i]+$arr[$i+2]-$this->pad*2)/2,($arr[$i+1]+$arr[$i+3]-$this->pad*2)/2)) {
 		  $ok=1; 
 	       }
 	    }
+	
 	    if (!$ok) {
 	       imagefilledpolygon($im,$arr,$num,$col);
 	       
@@ -387,7 +322,7 @@ contour:
 		  
 		//  if (!$this->pnpoly($nn,$this->nvertx,$this->nverty,$x1,$y1)
 		//       && !$this->pnpoly($nn,$this->nvertx,$this->nverty,$x2,$y2)) {
-		//	imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);   
+		//	imageline($im,$x1+$this->pad,$y1+$this->pad,$x2+$this->pad,$y2+$this->pad,$black);   
 		//  }
 		  
 		  $ok=0;
@@ -404,7 +339,7 @@ contour:
 		    $ok=1; 
 		  }
 		  if (!$ok && $x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-		     imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+		     imageline($im,$x1+$this->pad,$y1+$this->pad,$x2+$this->pad,$y2+$this->pad,$black);
 		  }
 	       }
 	    }
@@ -524,7 +459,7 @@ alphashape:
    	    {
    	       $v[$x1.$y1]++;
    	       $v[$x2.$y2]++;
-   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black); 	       
+   	       imageline($im,$x1+$this->pad,$y1+$this->pad,$x2+$this->pad,$y2+$this->pad,$black); 	       
    	    }
    	    if ($d<$this->average2 && abs($x1)==SUPER_TRIANGLE || abs($y1)==SUPER_TRIANGLE || abs($x2)==SUPER_TRIANGLE || abs($y2)==SUPER_TRIANGLE)
    	    {
@@ -539,7 +474,7 @@ alphashape:
    	    list($x1,$y1,$x2,$y2) = array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);	    
    	    if (($v[$x1.$y1]<2 ||$v[$x2.$y2]<2) && (abs($x1)!=SUPER_TRIANGLE &&
    		  abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)) {
-   	       imageline($im,$x1+$this->padding,$y1+$this->padding,$x2+$this->padding,$y2+$this->padding,$black);
+   	       imageline($im,$x1+$this->pad,$y1+$this->pad,$x2+$this->pad,$y2+$this->pad,$black);
    	    }
    	 }
       }
@@ -549,9 +484,18 @@ alphashape:
 shape:
 
       for ($i=0,$end=count($this->shape);$i<$end;$i+=2) {
-	 imageline($im,$this->shape[$i][0]+$this->padding,$this->shape[$i][1]+$this->padding,
-		   $this->shape[$i+1][0]+$this->padding,$this->shape[$i+1][1]+$this->padding,
-		   $black);
+	 
+	 list($x1,$y1)=$this->shape[$i];
+	 list($x2,$y2)=$this->shape[$i+1];
+	 $dx=$x2-$x1;
+	 $dy=$y2-$y1;
+	 $d=$dx*$dx+$dy*$dy;
+	 if ($d<$this->average)
+	 {
+	    imageline($im,$x1+$this->pad,$y1+$this->pad,
+		      $x2+$this->pad,$y2+$this->pad,
+		      $black);
+	 }
       }
 
 ImageEnd:

@@ -11,12 +11,12 @@ require_once("contour.php");
 
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
-//Alphashape
-define("ALPHA",3.9);
+//Alphashape 
+define("ALPHA",12.5);
 //define("BETA",1.2);
 //define("PHI",0.8);
 //shapefile filter
-define("OMEGA",60);
+define("OMEGA",20);
 //Experimental shapefile z-value
 //define("MINRAND",40);
 //define("MAXRAND",60);
@@ -28,6 +28,8 @@ define("INTERVAL",0.9);
 //define("DATAFILE","PennsylvaniaLonLatT.txt");
 define("SHAPEFILE","txshape.txt");
 define("DATAFILE","txlonlat.txt");
+//define("SHAPEFILE","cashape.txt");
+//define("DATAFILE","calonlat.txt");
 //Image path output folder
 define("PATH","/tmp/");
 
