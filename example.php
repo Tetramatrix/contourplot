@@ -11,17 +11,25 @@ require_once("contour.php");
 
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
-define("ALPHA",2.3);
-define("BETA",1.2);
-define("PHI",0.8);
-define("OMEGA",10);
-define("MINRAND",40);
-define("MAXRAND",60);
+//Alphashape
+define("ALPHA",0.9);
+//define("BETA",1.2);
+//define("PHI",0.8);
+//shapefile filter
+define("OMEGA",100);
+//Experimental shapefile z-value
+//define("MINRAND",40);
+//define("MAXRAND",60);
+//contour plot color steps
 define("STEPS",6);
-define("PATH","/tmp/");
-define("SHAPEFILE","PAShapeFile.txt");
-define("DATAFILE","PennsylvaniaLonLatT.txt");
+//contour plot interval
 define("INTERVAL",0.9);
+//define("SHAPEFILE","PAShapeFile.txt");
+//define("DATAFILE","PennsylvaniaLonLatT.txt");
+define("SHAPEFILE","txshape.txt");
+define("DATAFILE","txlonlat.txt");
+//Image path output folder
+define("PATH","/tmp/");
 
 if( !ini_get('safe_mode') )
 {
@@ -31,8 +39,8 @@ if( !ini_get('safe_mode') )
 set_time_limit(10000);
 
 $d=new mercator(MAPWIDTH,MAPHEIGHT);
-$arr=$d->loadfileZ(DATAFILE);
-$mean=$d->project($arr);
+$d->set=$d->loadfileZ(DATAFILE);
+$mean=$d->project($d->set);
 
 $s=new mercator(MAPWIDTH,MAPHEIGHT);
 $shape=$s->loadfileZ(SHAPEFILE);

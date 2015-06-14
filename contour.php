@@ -232,7 +232,6 @@ triangle:
 	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
 	       || ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
 	    {
-	       
 	       $points[$key][]=$x1+$this->padding;
 	       $points[$key][]=$y1+$this->padding;
 	       $points[$key][]=$x2+$this->padding;
@@ -320,7 +319,7 @@ triangle:
 	    for ($i=0,$end=count($arr);$i<$end;$i+=4) {
 	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
 				 ($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
-		  $ok=1; 
+		  //$ok=1; 
 	       }
 	    }
 	    if (!$ok) {
@@ -345,6 +344,7 @@ triangleEnd:
 contour:
 
       //goto contour2;
+      goto shape;
       
       $ns=count($this->svertx);
       $nn=count($this->nvertx);

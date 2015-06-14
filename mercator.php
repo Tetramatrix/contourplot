@@ -102,22 +102,42 @@ class mercator {
       return $arr;
    }
    
-   function repair($arr,$mean=0) { 
+   function repair($arr,$mean=0) {
+      $c=count($arr)%2;
+      if ($c!=0) {
+	 unset($arr[count($arr)-1]);
+      }
       //clockwise
       $temp=array();
-      for($i=0,$end=count($arr)-1;$i<$end;$i++) {
+      for($i=0,$end=count($arr);$i<$end;$i++) {
 	 list($x1,$y1,$z)=explode(",",$arr[$i]);
 	 
-	 if ($mean!=0) {
-	    $temp[]=array($x1,$y1,$mean);
-	 } else {
-	    $temp[]=array($x1,$y1,$z);
+	 if ($x1!=0 && $y1!=0)
+	 {
+	    if ($mean!=0) {
+	       $temp[]=array($x1,$y1,$mean);
+	    } else {
+	       $temp[]=array($x1,$y1,$z);
+	    }
 	 }
-	 list($x2,$y2,$z)=explode(",",$arr[$i+1]);
-	  if ($mean!=0) {
-	    $temp[]=array($x2,$y2,$mean);
+	 list($x1,$y1,$z)=explode(",",$arr[$i+1]);
+	 if ($x1!=0 && $y1!=0)
+	 {
+	    if ($mean!=0) {
+	       $temp[]=array($x1,$y1,$mean);
+	    } else {
+	       $temp[]=array($x1,$y1,$z);
+	    }
 	 } else {
-	    $temp[]=array($x2,$y2,$z);
+	    list($x1,$y1,$z)=explode(",",$arr[0]);
+	    if ($x1!=0 && $y1!=0)
+	    {
+	       if ($mean!=0) {
+		  $temp[]=array($x1,$y1,$mean);
+	       } else {
+		  $temp[]=array($x1,$y1,$z);
+	       }
+	    }
 	 }
       }
       return $temp;
@@ -143,7 +163,7 @@ class mercator {
       $x=array_values($x);
       $y=array_values($y);
       $set=array();
-      for($i=0;$i<count($x);$i+=$param)
+      for($i=0,$end=count($x);$i<$end;$i+=$param)
       {
 	 $tx=round($x[$i]);
 	 $ok=0;
@@ -183,17 +203,15 @@ class mercator {
       foreach ($arr as $key => $arr2) 
       { 
          list($lon,$lat,$z) = explode(",",$arr2);
-         $this->ZMin = min($this->ZMin,$z);
-	 $this->ZMax = max($this->ZMax,$z);
+         $this->ZMin=min($this->ZMin,$z);
+	 $this->ZMax=max($this->ZMax,$z);
 	 $sum+=$z;
 	 $c++;
          $this->mapLonLeft = min($this->mapLonLeft,$lon); 
          $this->mapLonRight = max($this->mapLonRight,$lon); 
          $this->mapLatBottom = min( $this->mapLatBottom,$lat); 
          $this->mapLatTop = max($this->mapLatTop,$lat); 
-         if ($mean!=0) {
-            $this->set[]=array($lon,$lat,$mean);
-         } else {
+	 if ($mean==0) {
             $this->set[]=array($lon,$lat,$z);
          }
       } 
@@ -225,6 +243,7 @@ class mercator {
          } else {
             $this->proj[]=array($tx,$ty,$z);
          }
+
       }
       
       $this->set=$this->convert($this->set);          
