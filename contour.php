@@ -155,6 +155,22 @@ class Image
       return ($dx1*$dy2)-($dy1*$dx2);
    }
    
+   //http://stackoverflow.com/questions/30421985/line-segment-intersection
+   //   class func linesCross(#line1: Line, line2: Line) -> Bool {
+   //    let denominator = (line1.end.y - line1.start.y) * (line2.end.x - line2.start.x) -
+   //        (line1.end.x - line1.start.x) * (line2.end.y - line2.start.y)
+   //
+   //    if denominator == 0 { return false } //lines are parallel
+   //
+   //    let ua = ((line1.end.x - line1.start.x) * (line2.start.y - line1.start.y) -
+   //        (line1.end.y - line1.start.y) * (line2.start.x - line1.start.x)) / denominator
+   //    let ub = ((line2.end.x - line2.start.x) * (line2.start.y - line1.start.y) -
+   //        (line2.end.y - line2.start.y) * (line2.start.x - line1.start.x)) / denominator
+   //
+   //    //lines may touch each other - no test for equality here
+   //    return ua > 0 && ua < 1 && ub > 0 && ub < 1
+   //}
+   
    // http://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html
    function pnpoly($nvert, $vertx, $verty, $testx, $testy)
    {
@@ -162,10 +178,9 @@ class Image
       for ($i=0, $j=$nvert-1; $i<$nvert; $j=$i++)
       {
 	if ((($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
-	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]))
+	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i])/($verty[$j]-$verty[$i]) + $vertx[$i]))
 	 {
-	    $c=1;
-	    break;
+	    $c= !$c;
 	 }
       }
       return $c;
@@ -225,13 +240,15 @@ triangle:
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
 	      $ok=1; 
 	    }
-	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-	       $ok=1; 
-            }
+//	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
+//	       $ok=1; 
+//            }
 	    
 	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
 	       || ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
 	    {
+	    //if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
+	    //{
 	       $points[$key][]=$x1+$this->padding;
 	       $points[$key][]=$y1+$this->padding;
 	       $points[$key][]=$x2+$this->padding;
@@ -267,40 +284,40 @@ triangle:
 	       --$num;
 	    }
 	 }
-	 $arr=array_values($arr);
-	 if ($num>=3 && !$this->hull[$key]) {
-	    for($i=0;$i<$num;$i+=4) {
-	       $ok=0;
-	       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
-		  $ok=1; 
-	       }
-	       if ($ok) {
-		  unset($arr[$i]);
-		  unset($arr[$i+1]);
-		  unset($arr[$i+2]);
-		  unset($arr[$i+3]);
-		  --$num;
-		  --$num;
-	       }
-	    }
-	 }
-	 $arr=array_values($arr);
-	 if ($num>=3 && $this->hull[$key]) {
-	    for($i=0;$i<$num;$i+=4) {
-	       $ok=0;
-	       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
-		 $ok=1; 
-	       }
-	       if ($ok) {
-		  unset($arr[$i]);
-		  unset($arr[$i+1]);
-		  unset($arr[$i+2]);
-		  unset($arr[$i+3]);
-		  --$num;
-		  --$num;
-	       }
-	    }
-	 }
+	// $arr=array_values($arr);
+	// if ($num>=3 && !$this->hull[$key]) {
+	//    for($i=0;$i<$num;$i+=4) {
+	//       $ok=0;
+	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
+	//	  $ok=1; 
+	//       }
+	//       if ($ok) {
+	//	  unset($arr[$i]);
+	//	  unset($arr[$i+1]);
+	//	  unset($arr[$i+2]);
+	//	  unset($arr[$i+3]);
+	//	  --$num;
+	//	  --$num;
+	//       }
+	//    }
+	// }
+	// $arr=array_values($arr);
+	// if ($num>=3 && $this->hull[$key]) {
+	//    for($i=0;$i<$num;$i+=4) {
+	//       $ok=0;
+	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
+	//	 $ok=1; 
+	//       }
+	//       if ($ok) {
+	//	  unset($arr[$i]);
+	//	  unset($arr[$i+1]);
+	//	  unset($arr[$i+2]);
+	//	  unset($arr[$i+3]);
+	//	  --$num;
+	//	  --$num;
+	//       }
+	//    }
+	// }
 	 $arr=array_values($arr);
 	 $num=count($arr)/2;
 	 if ($num>=3 && !$this->hull[$key]) {
@@ -317,9 +334,12 @@ triangle:
 	    }
 	    $ok=0;
 	    for ($i=0,$end=count($arr);$i<$end;$i+=4) {
+	       //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
+	       //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
+	       //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
 	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
-				 ($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2)) {
-		  //$ok=1; 
+				 ($arr[$i]+$arr[$i+2]-$this->padding*2)/2,($arr[$i+1]+$arr[$i+3]-$this->padding*2)/2)) {
+		  $ok=1; 
 	       }
 	    }
 	    if (!$ok) {
@@ -336,7 +356,6 @@ triangle:
 	       }
 	       imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
 triangleEnd:
-
 	    }
 	 }
       }
@@ -872,7 +891,7 @@ class Contourplot
       }
       return count($v);
    }
-   
+
    // http://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html
    function insidePoly($poly, $px, $py) 
    {
@@ -898,8 +917,7 @@ class Contourplot
 	if ((($verty[$i]>$testy) != ($verty[$j]>$testy)) &&
 	 ($testx < ($vertx[$j]-$vertx[$i]) * ($testy-$verty[$i]) / ($verty[$j]-$verty[$i]) + $vertx[$i]) )
 	 {
-	    $c=1;
-	    break;
+	    $c = !$c;
 	 }
       }
       return $c;

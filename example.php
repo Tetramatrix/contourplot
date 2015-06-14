@@ -12,11 +12,11 @@ require_once("contour.php");
 define("MAPWIDTH",1000);
 define("MAPHEIGHT",1000);
 //Alphashape
-define("ALPHA",0.9);
+define("ALPHA",3.9);
 //define("BETA",1.2);
 //define("PHI",0.8);
 //shapefile filter
-define("OMEGA",100);
+define("OMEGA",60);
 //Experimental shapefile z-value
 //define("MINRAND",40);
 //define("MAXRAND",60);
