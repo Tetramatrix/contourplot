@@ -197,12 +197,12 @@ class mercator {
       return $filter;
    }
    
-   function project($arr,$mean=0) 
+   function project($arr,$mean=0,$mapLonLeft=5000,$mapLatBottom=5000,$mapLonRight=-5000,$mapLatTop=-5000) 
    {
-      $this->mapLonLeft  = 5000; 
-      $this->mapLatBottom= 5000; 
-      $this->mapLonRight =-5000; 
-      $this->mapLatTop   =-5000; 
+      $this->mapLonLeft  = $mapLonLeft; 
+      $this->mapLatBottom= $mapLatBottom; 
+      $this->mapLonRight = $mapLonRight; 
+      $this->mapLatTop   = $mapLatTop; 
       $this->proj=array();
       $this->ZMax        =-5000;
       $this->ZMin        =5000;

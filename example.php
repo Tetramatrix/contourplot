@@ -23,13 +23,13 @@ define("STEPS",6);
 //contour plot interval
 define("INTERVAL",0.9);
 //define("SHAPEFILE","PAShapeFile.txt");
-//define("DATAFILE","PAlonlat.txt");
-//define("SHAPEFILE","txshape.txt");
-//define("DATAFILE","txlonlat.txt");
+//define("DATAFILE","PennsylvaniaLonLatT.txt");
+define("SHAPEFILE","txshape.txt");
+define("DATAFILE","txlonlat.txt");
 //define("SHAPEFILE","cashape.txt");
 //define("DATAFILE","calonlat.txt");
-define("SHAPEFILE","flshape.txt");
-define("DATAFILE","fllonlat.txt");
+//define("SHAPEFILE","flshape.txt");
+//define("DATAFILE","fllonlat.txt");
 //Image path output folder
 define("PATH","/tmp/");
 
@@ -54,10 +54,10 @@ $filter=$s->filter($s->proj,OMEGA);
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ(DATAFILE);
 $arr=array_merge($arr,$filter);
-$m=$f->project($arr);
+$m=$f->project($arr,0,$s->mapLonLeft,$s->mapLatBottom,$s->mapLonRight,$s->mapLatTop);
 
 $plot=new Contourplot();
-$res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$d->proj,$mean,$d->ZMax,$d->ZMin,ALPHA);
+$res=$plot->main($f->proj,$f->mapWidth,$f->mapHeight,$s->proj,$s->proj,$mean,$d->ZMax,$d->ZMin,ALPHA);
  
 $pic=new Image(PATH,$plot);
 $pic->create();
