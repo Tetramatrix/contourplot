@@ -153,6 +153,14 @@ class mercator {
    }
    
    function filter($arr,$param) {
+      if ($params==1) {
+	 $filter=array();
+	 foreach ($this->set as $key => $arr) {
+	    list($lon,$lat,$z)=explode(",",$arr);
+	    $filter[]="$lon,$lat,$z";
+	 }
+	 return $filter; 
+      }
       $x=$y=array();
       foreach ($arr as $key => $arr)
       {

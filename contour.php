@@ -256,15 +256,34 @@ triangle:
 
 	 if ($num>=3) {
 	    $arr=array_values($arr);
+	    
 	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
-	    $averageZ=($this->points[$subject[$key]["x"]]->z+$this->points[$subject[$key]["y"]]->z+$this->points[$subject[$key]["z"]]->z)/3;
+	    
+	    $zx = $this->points[$subject[$key]["x"]]->z;
+	    $zy = $this->points[$subject[$key]["y"]]->z;
+	    $zz = $this->points[$subject[$key]["z"]]->z;
+	   
+	    if ($zx<0 && $zy<0 && $zz<0) goto triangleEnd;
+	    
+	    $find=array($zx,$zy,$zz);
+	    for ($i=0;$i<3;$i++) {
+	       for ($j=0;$j<3;$j++) {
+		  if ($i!=$j) {
+		     if ($find[$i]<0 && $find[$j]>0 ) {
+			$find[$i]=$find[$j];
+		     }
+		  }
+	       }
+	    }
+	    list($zx,$zy,$zz)=$find;
+	    $averageZ=($zx+$zy+$zz)/3;
 	    
 	    if ($averageX>$averageZ) {
-	       $delta=min(($averageX-$averageZ)*(255/STEPS),255);
-	       $col=imagecolorallocate ($im,$delta,$delta,255);
+	       $delta=min(($averageX-$averageZ)*(255/STEPS),190);
+	       $col=imagecolorallocate ($im,190-$delta,190-$delta,255);
 	    } else {
-	       $delta=min(($averageZ-$averageX)*(255/STEPS),255);
-	       $col=imagecolorallocate ($im,255,$delta,$delta);
+	       $delta=min(($averageZ-$averageX)*(255/STEPS),190);
+	       $col=imagecolorallocate ($im,255,190-$delta,190-$delta);
 	    }
 	    $ok=0;
 	    for ($i=0,$end=count($arr);$i<$end;$i+=4) {
@@ -920,6 +939,7 @@ class Contourplot
       { 
          for ($i=0,$end=count($points);$i<$end;$i++)
 	 {
+	    //$this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],$points[$i][2]);
 	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],$this->mean);
 	 } 
       }
