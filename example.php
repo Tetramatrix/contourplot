@@ -14,7 +14,7 @@ define("MAPHEIGHT",1000);
 //Alphashape 
 define("ALPHA",12.5);
 //shapefile filter
-define("OMEGA",1);
+define("OMEGA",0);
 //Experimental shapefile z-value
 //define("MINRAND",40);
 //define("MAXRAND",60);
@@ -22,10 +22,10 @@ define("OMEGA",1);
 define("STEPS",6);
 //contour plot interval
 define("INTERVAL",0.9);
-//define("SHAPEFILE","PAShapeFile.txt");
-//define("DATAFILE","PennsylvaniaLonLatT.txt");
-define("SHAPEFILE","txshape.txt");
-define("DATAFILE","txlonlat.txt");
+define("SHAPEFILE","PAShapeFile.txt");
+define("DATAFILE","PennsylvaniaLonLatT.txt");
+//define("SHAPEFILE","txshape.txt");
+//define("DATAFILE","txlonlat.txt");
 //define("SHAPEFILE","cashape.txt");
 //define("DATAFILE","calonlat.txt");
 //define("SHAPEFILE","flshape.txt");
@@ -48,12 +48,12 @@ $s=new mercator(MAPWIDTH,MAPHEIGHT);
 $shape=$s->loadfileZ(SHAPEFILE);
 $s->set=$s->repair($shape,-1);
 $m=$s->project($shape,-1);
-$filter=$s->filter($s->proj,OMEGA);
-//$filter=$shape;
 
 $f=new mercator(MAPWIDTH,MAPHEIGHT);
 $arr=$f->loadfileZ(DATAFILE);
-$arr=array_merge($arr,$filter);
+if (OMEGA) {
+    $arr=array_merge($arr,$s->filter($s->proj,OMEGA));
+} 
 $m=$f->project($arr,0,$s->mapLonLeft,$s->mapLatBottom,$s->mapLonRight,$s->mapLatTop);
 
 $plot=new Contourplot();

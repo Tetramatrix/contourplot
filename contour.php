@@ -7,6 +7,7 @@
  *  All rights reserved
  *
  ****************************************************************/
+require_once("hilbert.php");
 
 define("EPSILON",0.000001);
 define("SUPER_TRIANGLE",(float)1000000000);
@@ -943,13 +944,36 @@ class Contourplot
 	    $this->points[]=new Point($points[$i][0],$points[$i][1],$points[$i][2],$this->mean);
 	 } 
       }
-
+      
+      //goto hilbert;
+      
       $x=$y=$sortX=array(); 
       foreach($this->points as $key=>$arr)
       {
          $sortX[$key]=$arr->x;
       } 
       array_multisort($sortX, SORT_ASC, SORT_NUMERIC, $this->points);
+      goto dt;
+      
+hilbert:
+      $sortX=array(); 
+      $maxx=$maxy=0;
+      foreach ($this->points as $key => $arr)
+      {
+	 if ($maxx<$arr->x) $maxx=$arr->y;
+	 if ($maxy<$arr->y) $maxy=$arr->y;
+      }
+      
+      $hilbert = new hilbert();     
+      $powx=$hilbert->power($maxx,2);     
+      $powy=$hilbert->power($maxy,2);
+      $order= ($powx<$powy) ? $powy : $powx;
+ 
+      foreach($this->points as $key => $arr) {
+	 $sort[$key] = $hilbert->point2hilbert($arr->x, $arr->y, $order);
+      }
+      array_multisort($sort, SORT_DESC, SORT_NUMERIC, $this->points);
+dt:
       $result=$this->getEdges(count($this->points), $this->points);
    
       $sum=$c=0;
