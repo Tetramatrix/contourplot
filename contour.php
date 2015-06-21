@@ -220,6 +220,7 @@ triangle:
 
       foreach ($this->delaunay as $key => $arr)
       {
+	 $c=0;
 	 foreach ($arr as $ikey => $iarr)
 	 {
 	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
@@ -235,17 +236,23 @@ triangle:
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
 	      $ok=1; 
 	    }
-	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2,($y1+$y2)/2)) {
-	       $ok=1; 
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2-10,($y1+$y2)/2-10)) {
+	       ++$c;
+            }
+	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2+10,($y1+$y2)/2+10)) {
+	       ++$c;
             }
 	    
-	    if ((!$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE)
-	       || ($d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE))
+	    if ($c==0 && !$ok && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE )
 	    {
-	       $points[$key][]=$x1+$this->pad;
-	       $points[$key][]=$y1+$this->pad;
-	       $points[$key][]=$x2+$this->pad;
-	       $points[$key][]=$y2+$this->pad;
+	       $points[$key][]=$arr->$ikey->x->x+$this->pad;
+	       $points[$key][]=$arr->$ikey->x->y+$this->pad;
+	       $subject[$key][$ikey]=$this->indices[$key]->$ikey;
+	    
+	    } else if ($c<3 && $d<$this->average && abs($x1)!=SUPER_TRIANGLE && abs($y1)!=SUPER_TRIANGLE && abs($x2)!=SUPER_TRIANGLE && abs($y2)!=SUPER_TRIANGLE) {
+	       
+	       $points[$key][]=$arr->$ikey->x->x+$this->pad;
+	       $points[$key][]=$arr->$ikey->x->y+$this->pad;
 	       $subject[$key][$ikey]=$this->indices[$key]->$ikey;
 	    }
 	 }
@@ -286,8 +293,14 @@ triangle:
 	       $delta=min(($averageZ-$averageX)*(255/STEPS),190);
 	       $col=imagecolorallocate ($im,255,190-$delta,190-$delta);
 	    }
-	    $ok=0;
-	    for ($i=0,$end=count($arr);$i<$end;$i+=4) {
+	    
+	    //$c=$ok=0;
+	    //for ($i=0,$end=count($arr);$i<$end;$i+=4) {
+	    //   $dx=$arr[$i+2]-$arr[$i];
+	    //   $dy=$arr[$i+3]-$arr[$i+1];
+	    //   //$d=sqrt($dx*$dx+$dy*$dy);
+	    //   $d=$dx*$dx+$dy*$dy;
+	    
 	       //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
 	       //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
 	       //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
@@ -297,13 +310,14 @@ triangle:
 	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i+2]-$this->pad,$arr[$i+3]-$this->pad)) {
 	//	 $ok=1; 
 	//       }
-	       if (!$this->pnpoly($ns,$this->svertx, $this->sverty,
-				 ($arr[$i]+$arr[$i+2]-$this->pad*2)/2,($arr[$i+1]+$arr[$i+3]-$this->pad*2)/2)) {
-		  $ok=1; 
-	       }
-	    }
+	//       if ($d<$this->average && !$this->pnpoly($ns,$this->svertx, $this->sverty,
+	//			 ($arr[$i]+$arr[$i+2]-$this->pad*2)/2,($arr[$i+1]+$arr[$i+3]-$this->pad*2)/2)) {
+	//	  $ok=1;
+	//	  ++$c;
+	//       }
+	//    }
 	
-	    if (!$ok) {
+	    //if (!$ok) {
 	       imagefilledpolygon($im,$arr,$num,$col);
 	       
 	       goto triangleEnd;
@@ -317,7 +331,7 @@ triangle:
 	       }
 	       imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
 triangleEnd:
-	    }
+	    //}
 	 }
       }
 
@@ -509,18 +523,28 @@ alphashape:
 shape:
 
       for ($i=0,$end=count($this->shape);$i<$end;$i+=2) {
-	 
-	 list($x1,$y1)=$this->shape[$i];
-	 list($x2,$y2)=$this->shape[$i+1];
-	 $dx=$x2-$x1;
-	 $dy=$y2-$y1;
-	 $d=$dx*$dx+$dy*$dy;
-	 if ($d<$this->average)
-	 {
-	    imageline($im,$x1+$this->pad,$y1+$this->pad,
-		      $x2+$this->pad,$y2+$this->pad,
+	 switch (OMEGA) {
+          case 0:
+               list($x1,$y1)=$this->shape[$i];
+               list($x2,$y2)=$this->shape[$i+1];
+               imageline($im,$x1+$this->pad,$y1+$this->pad,
+                      $x2+$this->pad,$y2+$this->pad,
+                      $black);
+	  break;	
+          default:
+       	       list($x1,$y1)=$this->shape[$i];
+	       list($x2,$y2)=$this->shape[$i+1];
+	       $dx=$x2-$x1;
+	       $dy=$y2-$y1;
+	       $d=$dx*$dx+$dy*$dy;
+	       if ($d<$this->average)
+	       {
+	           imageline($im,$x1+$this->pad,$y1+$this->pad,
+	 	      $x2+$this->pad,$y2+$this->pad,
 		      $black);
-	 }
+	       }
+          break;
+	}
       }
 
 ImageEnd:
@@ -986,7 +1010,7 @@ dt:
 	 }
       }
       
-      $this->average=$sum/$c*$this->weight;
+      $this->average=($sum/$c)*$this->weight;
       $n=count($this->points);
       $nn=count($this->nvertx);
       $sum=$c=0;
