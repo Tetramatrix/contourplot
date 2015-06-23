@@ -226,7 +226,6 @@ triangle:
 	    list($x1,$y1,$x2,$y2)=array($iarr->x->x,$iarr->x->y,$iarr->y->x,$iarr->y->y);
 	    $dx=$x2-$x1;
 	    $dy=$y2-$y1;
-	    //$d=sqrt($dx*$dx+$dy*$dy);
 	    $d=$dx*$dx+$dy*$dy;
 	    
 	    $ok=0;
@@ -236,6 +235,23 @@ triangle:
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x2,$y2)) {
 	      $ok=1; 
 	    }
+
+	    //http://stackoverflow.com/questions/1934210/finding-a-point-on-a-line
+//	    $temp=sqrt($d);
+//	    $r=2/$temp;
+//	    $x3=$r*$x2+(1-$r)*$x1;
+//	    $y3=$r*$y2+(1-$r)*$y1;
+//	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x3,$y3)) {
+//	       ++$c;
+//            }
+//	    
+//	    $r=3/$temp;
+//	    $x3=$r*$x2+(1-$r)*$x1;
+//	    $y3=$r*$y2+(1-$r)*$y1;
+//	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$x3,$y3)) {
+//	       ++$c;
+//            }
+
 	    if (!$this->pnpoly($ns,$this->svertx,$this->sverty,($x1+$x2)/2-10,($y1+$y2)/2-10)) {
 	       ++$c;
             }
@@ -293,45 +309,24 @@ triangle:
 	       $delta=min(($averageZ-$averageX)*(255/STEPS),190);
 	       $col=imagecolorallocate ($im,255,190-$delta,190-$delta);
 	    }
-	    
-	    //$c=$ok=0;
-	    //for ($i=0,$end=count($arr);$i<$end;$i+=4) {
-	    //   $dx=$arr[$i+2]-$arr[$i];
-	    //   $dy=$arr[$i+3]-$arr[$i+1];
-	    //   //$d=sqrt($dx*$dx+$dy*$dy);
-	    //   $d=$dx*$dx+$dy*$dy;
-	    
-	       //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
-	       //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
-	       //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
-	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i]-$this->pad,$arr[$i+1]-$this->pad)) {
-	//	  $ok=1; 
-	//       }	       
-	//       if (!$this->pnpoly($ns,$this->svertx,$this->sverty,$arr[$i+2]-$this->pad,$arr[$i+3]-$this->pad)) {
-	//	 $ok=1; 
-	//       }
-	//       if ($d<$this->average && !$this->pnpoly($ns,$this->svertx, $this->sverty,
-	//			 ($arr[$i]+$arr[$i+2]-$this->pad*2)/2,($arr[$i+1]+$arr[$i+3]-$this->pad*2)/2)) {
-	//	  $ok=1;
-	//	  ++$c;
-	//       }
-	//    }
-	
-	    //if (!$ok) {
-	       imagefilledpolygon($im,$arr,$num,$col);
-	       
-	       goto triangleEnd;
+	 
+	    //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
+	    //imagefilledellipse($im,$arr[$i+2],$arr[$i+3], 4, 4, $darkorange);
+	    //imagefilledellipse($im,($arr[$i]+$arr[$i+2])/2,($arr[$i+1]+$arr[$i+3])/2, 4, 4, $darkorange);
 
-	       for ($i=0,$e=count($arr);$i<$e;$i+=2) {
-		  list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
-		  if ($x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
-		     //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
-		     imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
-		  }
+	    imagefilledpolygon($im,$arr,$num,$col);
+	    
+	    goto triangleEnd;
+
+	    for ($i=0,$e=count($arr);$i<$e;$i+=2) {
+	       list($x1,$y1,$x2,$y2)=array($arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3]);
+	       if ($x1!=0 && $y1!=0 && $x2!=0 && $y2!=0) {
+		  //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $black);
+		  imageline($im,$arr[$i],$arr[$i+1],$arr[$i+2],$arr[$i+3],$grey_dark);
 	       }
-	       imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
+	    }
+	    imageline($im,$arr[0],$arr[1],$arr[$i-2],$arr[$i-1],$grey_dark);
 triangleEnd:
-	    //}
 	 }
       }
 
@@ -527,9 +522,15 @@ shape:
           case 0:
                list($x1,$y1)=$this->shape[$i];
                list($x2,$y2)=$this->shape[$i+1];
-               imageline($im,$x1+$this->pad,$y1+$this->pad,
+	       $dx=$x2-$x1;
+	       $dy=$y2-$y1;
+	       $d=$dx*$dx+$dy*$dy;
+	       if ($d<$this->average)
+	       {
+		  imageline($im,$x1+$this->pad,$y1+$this->pad,
                       $x2+$this->pad,$y2+$this->pad,
                       $black);
+	       }
 	  break;	
           default:
        	       list($x1,$y1)=$this->shape[$i];
