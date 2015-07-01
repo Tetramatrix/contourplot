@@ -22,14 +22,14 @@ define("OMEGA",0);
 define("STEPS",6);
 //contour plot interval
 define("INTERVAL",0.9);
-//define("SHAPEFILE","PAShapeFile.txt");
-//define("DATAFILE","PennsylvaniaLonLatT.txt");
+define("SHAPEFILE","PAShapeFile.txt");
+define("DATAFILE","PennsylvaniaLonLatT.txt");
 //define("SHAPEFILE","txshape.txt");
 //define("DATAFILE","txlonlat.txt");
 //define("SHAPEFILE","cashape.txt");
 //define("DATAFILE","calonlat.txt");
-define("SHAPEFILE","flshape.txt");
-define("DATAFILE","fllonlat.txt");
+//define("SHAPEFILE","flshape.txt");
+//define("DATAFILE","fllonlat.txt");
 //Image path output folder
 define("PATH","/tmp/");
 

@@ -292,10 +292,8 @@ triangle:
 	    $find=array($zx,$zy,$zz);
 	    for ($i=0;$i<3;$i++) {
 	       for ($j=0;$j<3;$j++) {
-		  if ($i!=$j) {
-		     if ($find[$i]<0 && $find[$j]>0 ) {
-			$find[$i]=$find[$j];
-		     }
+		  if ($i!=$j && $find[$i]<0 && $find[$j]>0 ) {
+		     $find[$i]=$find[$j];
 		  }
 	       }
 	    }
@@ -304,10 +302,18 @@ triangle:
 	    
 	    if ($averageX>$averageZ) {
 	       $delta=min(($averageX-$averageZ)*(255/STEPS),190);
-	       $col=imagecolorallocate ($im,190-$delta,190-$delta,255);
+	       if(imagecolorstotal($im)>=255) {
+		  $col=imagecolorclosest($im,190-$delta,190-$delta,255);
+	       } else {
+		  $col=imagecolorallocate($im,190-$delta,190-$delta,255);
+	       }
 	    } else {
 	       $delta=min(($averageZ-$averageX)*(255/STEPS),190);
-	       $col=imagecolorallocate ($im,255,190-$delta,190-$delta);
+	       if(imagecolorstotal($im)>=255) {
+		  $col=imagecolorclosest ($im,255,190-$delta,190-$delta);
+	       } else {
+		  $col=imagecolorallocate ($im,255,190-$delta,190-$delta);
+	       }
 	    }
 	 
 	    //imagefilledellipse($im,$arr[$i],$arr[$i+1], 4, 4, $darkorange);
@@ -333,7 +339,7 @@ triangleEnd:
 contour:
 
       //goto contour2;
-      goto shape;
+      //goto shape;
       
       $ns=count($this->svertx);
       $nn=count($this->nvertx);
