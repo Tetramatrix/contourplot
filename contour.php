@@ -278,7 +278,7 @@ triangle:
       foreach ($points as $key=>$arr) {
 	 $num=count($arr)/2;
 
-	 if ($num>=3) {
+	 if ($num>=3 && count($subject[$key])==3) {
 	    $arr=array_values($arr);
 	    
 	    $averageX=($this->points[$subject[$key]["x"]]->alpha+$this->points[$subject[$key]["y"]]->alpha+$this->points[$subject[$key]["z"]]->alpha)/3;
@@ -708,6 +708,9 @@ class Contourplot
 
       if ($absy1y2 < EPSILON)
       {
+	 if ($absy2y3 < EPSILON) {
+	     $y3+=EPSILON;
+	 }
          $m2 = -($x3-$x2) / ($y3-$y2);
          $mx2 = ($x2 + $x3) / 2.0;
          $my2 = ($y2 + $y3) / 2.0;
@@ -716,6 +719,9 @@ class Contourplot
       }
       else if ($absy2y3 < EPSILON)
       {
+	 if ($absy1y2 < EPSILON) {
+	    $y2+=EPSILON;
+	 }
          $m1 = -($x2-$x1) / ($y2-$y1);
          $mx1 = ($x1 + $x2) / 2.0;
          $my1 = ($y1 + $y2) / 2.0;
